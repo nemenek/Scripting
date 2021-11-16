@@ -1,0 +1,6 @@
+CREATE i 10
+CREATE j 2
+ADD i j
+write i
+IF i != 36
+jump 2
