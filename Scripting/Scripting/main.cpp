@@ -2,5 +2,4 @@
 
 int main() {
 	Expressions exp("sample.txt");
-	getchar();
 }

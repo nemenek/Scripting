@@ -3,6 +3,10 @@
 #include <iostream>
 #include <algorithm> 
 
+ExpressionsException::ExpressionsException(std::string msg) : message(msg) {}
+
+
+
 Expressions::Expressions(std::string path) {
 
 	std::ifstream newFile;
@@ -84,10 +88,13 @@ int Expressions::Execute(std::string commandName, std::string str) {
 		it->second = it->second / secondValue;
 	}
 	else if (commandName == "WRITE") {
-		size_t pos = str.find(" ");
-		std::string varName = str;
 		float value = GetNextValue(str);
-		std::cout << value << std::endl;
+		if (value == FLT_MIN) {
+			std::cout << str << std::endl;
+		}
+		else {
+			std::cout << value << std::endl;
+		}
 	}
 	else if (commandName == "IF") {
 		size_t pos = str.find(" ");
@@ -120,14 +127,20 @@ int Expressions::Execute(std::string commandName, std::string str) {
 		size_t pos = str.find(" ");
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
-		float varValue;
-		if (str != "") {
-			varValue = std::stof(str);
+		if (CheckIfNum(str)) {
+			float varValue;
+			if (str != "") {
+				varValue = std::stof(str);
+			}
+			else {
+				varValue = 0.0f;
+			}
+			variables.insert(std::pair<std::string, float>(varName, varValue));
 		}
 		else {
-			varValue = 0.0f;
+			variables.insert(std::pair<std::string, float>(varName, std::hash<std::string>{}(str)));
+			//TODO: Unhash string from float and display it. STRING operations??
 		}
-		variables.insert(std::pair<std::string, float>(varName, varValue));
 	}
 	else if (variables.at(commandName) != NULL) {
 
@@ -140,7 +153,20 @@ int Expressions::Execute(std::string commandName, std::string str) {
 float Expressions::GetNextValue(std::string varName) {
 	std::map<std::string, float>::iterator it = variables.find(varName);
 	if (it == variables.end()) {
-		return std::stof(varName);
+		if (CheckIfNum(varName)) {
+			return std::stof(varName);
+		}
+		return FLT_MIN;
 	}
 	return it->second;
+}
+
+//Returns true if the given parameter str is a number (can be float (1.0) number too), returns false otherwise.
+bool Expressions::CheckIfNum(std::string str) {
+	for (char c : str) {
+		if (std::isdigit(c) == 0 && c != '.') {
+			return false;
+		}
+	}
+	return true;
 }

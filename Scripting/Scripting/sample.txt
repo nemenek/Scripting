@@ -1,6 +1,3 @@
-CREATE i 10
-CREATE j 2
-ADD i j
+CREATE i 5
 write i
-IF i != 36
-jump 2
+write Hello World!
