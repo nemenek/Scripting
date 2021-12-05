@@ -8,7 +8,7 @@ VirtualMachineException::VirtualMachineException(std::string msg) : message(msg)
 std::string VirtualMachineException::what() {
 	return message;
 }
-VirtualMachine::VirtualMachine() {}
+VirtualMachine::VirtualMachine() : mainFuncReached(false) {}
 
 void VirtualMachine::ExecuteFromScript(std::string script) {
 	std::vector<std::string> lines;
@@ -28,10 +28,16 @@ void VirtualMachine::ExecuteFromScript(std::string script) {
 	int jumpTo = 0;
 
 	for (size_t i = 0; i < lines.size(); i++) {
-		if (lines[i] == "") { //empty line means the code is over
+		if (lines[i] == "END" || lines[i] == "end") { //empty line means the code is over
 			break;
 		}
 		else if (lines[i][0] == '#') { //# = comments
+			continue;
+		}
+		else if(lines[i] == "START" || lines[i] == "start"){
+			mainFuncReached = true;
+		}
+		else if (lines[i] == "") {
 			continue;
 		}
 
@@ -40,7 +46,7 @@ void VirtualMachine::ExecuteFromScript(std::string script) {
 		commandName = tempString.substr(0, pos); //getting the values from the line
 		tempString.erase(0, pos + 1);
 
-		jumpTo = Execute(commandName, tempString); //jumps in script line accordint to return value
+		jumpTo = Execute(commandName, tempString, i); //jumps in script line accordint to return value
 		if (jumpTo != 0) {
 			if (jumpTo > 0) {
 				i = jumpTo - 2;
@@ -73,17 +79,24 @@ void VirtualMachine::ExecuteFromFile(std::string path) {
 	std::string tempString = "";
 
 	for (size_t i = 0; i < lines.size(); i++) {
-		if (lines[i] == "") {
+		if (lines[i] == "END" || lines[i] == "end") { //empty line means the code is over
 			break;
 		}
-		else if (lines[i][0] == '#') {
+		else if (lines[i][0] == '#') { //# = comments
+			continue;
+		}
+		else if (lines[i] == "START" || lines[i] == "start") {
+			mainFuncReached = true;
+			continue;
+		}
+		else if (lines[i] == "") {
 			continue;
 		}
 		tempString = lines[i];
 		pos = tempString.find(" ");
 		commandName = tempString.substr(0, pos);
 		tempString.erase(0, pos + 1);
-		jumpTo = Execute(commandName, tempString);
+		jumpTo = Execute(commandName, tempString, i);
 		if (jumpTo != 0) {
 			if (jumpTo > 0) {
 				i = jumpTo - 2;
@@ -95,9 +108,16 @@ void VirtualMachine::ExecuteFromFile(std::string path) {
 	}
 }
 
-int VirtualMachine::Execute(std::string commandName, std::string str) {
+int VirtualMachine::Execute(std::string commandName, std::string str, int row) {
 
 	std::transform(commandName.begin(), commandName.end(), commandName.begin(), ::toupper);
+
+	if (!mainFuncReached) {
+		if (commandName == "FUNC") {
+			functions.insert(std::pair<std::string, int>(str, row + 2));
+		}
+		return 0;
+	}
 
 	if (commandName == "ADD") {
 		size_t pos = str.find(" ");
@@ -169,6 +189,7 @@ int VirtualMachine::Execute(std::string commandName, std::string str) {
 		else if (l_operator == "!=" && firstValue == secondValue) {
 			return -1;
 		}
+		return 0;
 	}
 	else if (commandName == "JUMP") {
 		int value = std::stoi(str);
@@ -198,8 +219,20 @@ int VirtualMachine::Execute(std::string commandName, std::string str) {
 			}
 		}
 	}
-	else if (floatVariables.at(commandName) != NULL) {
+	/*else if (floatVariables.at(commandName) != NULL) {
 
+	}*/
+	else if (commandName == "CALL") {
+		std::map<std::string, int>::iterator it = functions.find(str);
+		if (it != functions.end()) {
+			return it->second;
+		}
+		else {
+			throw VirtualMachineException("No such method is defined: " + str);
+		}
+	}
+	else {
+		throw VirtualMachineException("No such command: " + commandName);
 	}
 	return 0;
 }

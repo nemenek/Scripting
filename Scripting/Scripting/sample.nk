@@ -1,3 +1,23 @@
-CREATE i "asdasd"
+func IIsLess
+print "i is less than j"
+print "i:"
 print i
-print "Hello World!"
+jump 22
+
+func Compare
+if i > j
+print "i is greater than j"
+if i = j
+print "i equals j"
+if i < j
+call IIsLess
+jump 20
+
+start
+print "Check this out:"
+create i 32
+create j 0.5
+multiply i j
+call Compare
+print "Its getting better"
+end

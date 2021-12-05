@@ -27,10 +27,12 @@ public:
 	/// <param name="path">The path to the file.</param>
 	void ExecuteFromFile(std::string path);
 private:
-	int Execute(std::string commandName, std::string value);
+	int Execute(std::string commandName, std::string value, int row);
 	std::map <std::string, float> floatVariables;
 	std::map<std::string, std::string> stringVariables;
 	float GetNextFloatValue(std::string str);
 	std::string GetNextStringValue(std::string str);
 	bool CheckIfNum(std::string str);
+	std::map<std::string, int> functions;
+	bool mainFuncReached;
 };
