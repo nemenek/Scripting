@@ -16,11 +16,9 @@ Expressions::Expressions(std::string path) {
 
 	newFile.open(path);
 	if (newFile.is_open()) {
-		int lineCount = 0;
 		while (newFile.good()) {
 			std::getline(newFile, text);
 			lines.push_back(text);
-			++lineCount;
 		}
 	}
 
@@ -87,7 +85,7 @@ int Expressions::Execute(std::string commandName, std::string str) {
 		float secondValue = GetNextValue(str);
 		it->second = it->second / secondValue;
 	}
-	else if (commandName == "WRITE") {
+	else if (commandName == "PRINT") {
 		float value = GetNextValue(str);
 		if (value == FLT_MIN) {
 			std::cout << str << std::endl;
