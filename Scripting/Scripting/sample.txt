@@ -1,3 +1,0 @@
-CREATE i 5
-print i
-print Hello World!

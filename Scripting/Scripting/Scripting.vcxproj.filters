@@ -18,12 +18,12 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source Files\Expressions\Expressions.cpp">
+    <ClCompile Include="Source Files\Expressions\VirtualMachine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Headers\Expressions\Expressions.h">
+    <ClInclude Include="Headers\Expressions\VirtualMachine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

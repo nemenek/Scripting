@@ -1,0 +1,3 @@
+CREATE i "asdasd"
+print i
+print "Hello World!"
