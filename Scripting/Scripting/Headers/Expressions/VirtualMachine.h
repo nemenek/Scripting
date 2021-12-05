@@ -35,4 +35,5 @@ private:
 	bool CheckIfNum(std::string str);
 	std::map<std::string, int> functions;
 	bool mainFuncReached;
+	std::vector<int> returnRows;
 };

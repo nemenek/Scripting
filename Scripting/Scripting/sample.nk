@@ -1,23 +1,27 @@
-func IIsLess
-print "i is less than j"
-print "i:"
-print i
-jump 22
+func printGreatThings
+create name "Mark"
+print name
+print " is a great person"
+delete name
 
-func Compare
-if i > j
-print "i is greater than j"
-if i = j
-print "i equals j"
-if i < j
-call IIsLess
-jump 20
+func forciklus
+print "\n"
+print "function was called "
+Create j i
+add j 1
+print j
+print " times"
+print "\n"
+add i 1
+delete j
+call printGreatThings
+#program works fine without delete command but it is recommended to use it to avoid future problems
 
 start
-print "Check this out:"
-create i 32
-create j 0.5
-multiply i j
-call Compare
-print "Its getting better"
+create i 0
+if i < 10
+jump 25
+jump 27
+call forciklus
+jump 22
 end

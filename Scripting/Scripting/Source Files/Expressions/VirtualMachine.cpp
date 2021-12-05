@@ -34,7 +34,7 @@ void VirtualMachine::ExecuteFromScript(std::string script) {
 		else if (lines[i][0] == '#') { //# = comments
 			continue;
 		}
-		else if(lines[i] == "START" || lines[i] == "start"){
+		else if (lines[i] == "START" || lines[i] == "start") {
 			mainFuncReached = true;
 		}
 		else if (lines[i] == "") {
@@ -89,9 +89,9 @@ void VirtualMachine::ExecuteFromFile(std::string path) {
 			mainFuncReached = true;
 			continue;
 		}
-		else if (lines[i] == "") {
+		/*else if (lines[i] == "") {
 			continue;
-		}
+		}*/
 		tempString = lines[i];
 		pos = tempString.find(" ");
 		commandName = tempString.substr(0, pos);
@@ -154,16 +154,21 @@ int VirtualMachine::Execute(std::string commandName, std::string str, int row) {
 	else if (commandName == "PRINT") {
 		if (str[0] == '"' && str[str.size() - 1] == '"') {
 			str = str.substr(1, str.size() - 2);
-			std::cout << str << std::endl;
+			if (str != "\\n") {
+				std::cout << str;
+			}
+			else {
+				std::cout << std::endl;
+			}
 		}
 		else {
 			float value = GetNextFloatValue(str);
 			if (value == FLT_MIN) {
 				std::string stringValue = GetNextStringValue(str);
-				std::cout << stringValue << std::endl;
+				std::cout << stringValue;
 			}
 			else {
-				std::cout << value << std::endl;
+				std::cout << value;
 			}
 		}
 	}
@@ -199,24 +204,38 @@ int VirtualMachine::Execute(std::string commandName, std::string str, int row) {
 		size_t pos = str.find(" ");
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
+		std::map<std::string, float>::iterator it = floatVariables.find(str);
+		std::map<std::string, std::string>::iterator strIt = stringVariables.find(str);
 		if (CheckIfNum(str)) {
-			float varValue;
-			if (str != "") {
-				varValue = std::stof(str);
-			}
-			else {
-				varValue = 0.0f;
-			}
+			float varValue = std::stof(str);
 			floatVariables.insert(std::pair<std::string, float>(varName, varValue));
+		}
+		else if (it != floatVariables.end()) {
+			floatVariables.insert(std::pair<std::string, float>(varName, it->second));
 		}
 		else {
 			if (str[0] == '"' && str[str.size() - 1] == '"') {
 				str = str.substr(1, str.size() - 2);
 				stringVariables.insert(std::pair<std::string, std::string>(varName, str));
 			}
+			else if (strIt != stringVariables.end()) {
+				stringVariables.insert(std::pair<std::string, std::string>(varName, strIt->second));
+			}
 			else {
 				throw VirtualMachineException(str + " is not a number, or doesn't start with '\"' ");
 			}
+		}
+	}
+	else if (commandName == "DELETE") {
+		std::map<std::string, float>::iterator flIt = floatVariables.find(str);
+		if (flIt != floatVariables.end()) {
+			floatVariables.erase(flIt);
+			return 0;
+		}
+		std::map<std::string, std::string>::iterator strIt = stringVariables.find(str);
+		if (strIt != stringVariables.end()) {
+			stringVariables.erase(strIt);
+			return 0;
 		}
 	}
 	/*else if (floatVariables.at(commandName) != NULL) {
@@ -225,11 +244,17 @@ int VirtualMachine::Execute(std::string commandName, std::string str, int row) {
 	else if (commandName == "CALL") {
 		std::map<std::string, int>::iterator it = functions.find(str);
 		if (it != functions.end()) {
+			returnRows.push_back(row + 2);
 			return it->second;
 		}
 		else {
 			throw VirtualMachineException("No such method is defined: " + str);
 		}
+	}
+	else if (commandName == "") {
+		int value = returnRows[returnRows.size() - 1];
+		returnRows.pop_back();
+		return value;
 	}
 	else {
 		throw VirtualMachineException("No such command: " + commandName);
