@@ -1,27 +1,11 @@
-func printGreatThings
+func printGreatThings (message)
 create name "Mark"
 print name
-print " is a great person"
+print message
+print "\n"
 delete name
-
-func forciklus
-print "\n"
-print "function was called "
-Create j i
-add j 1
-print j
-print " times"
-print "\n"
-add i 1
-delete j
-call printGreatThings
-#program works fine without delete command but it is recommended to use it to avoid future problems
+delete message
 
 start
-create i 0
-if i < 10
-jump 25
-jump 27
-call forciklus
-jump 22
+call printGreatThings (" is great")
 end
