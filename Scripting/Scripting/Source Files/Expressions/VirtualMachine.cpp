@@ -115,11 +115,10 @@ void VirtualMachine::ExecuteFromFile(std::string path) {
 /// <param name="str">The command parameters. even with more parameters it should be one string, all the parameters seperated with space.</param>
 /// <param name="row">The index of the row which is being executed.</param>
 /// <returns>Greater than zero, if the program should jump to a specific row in the program. Less than zero if the program should skip a specific number of rows (-2 skips two rows(right now it only uses -1 as return value less than 0)). 0 if the program execution should follow in order.</returns>
-int VirtualMachine::Execute(std::string commandName, std::string str, int row) {
-
-	std::transform(commandName.begin(), commandName.end(), commandName.begin(), ::toupper);
-
+size_t VirtualMachine::Execute(std::string commandName, std::string str, int row) {
+	//function defining
 	if (!mainFuncReached) {
+		std::transform(commandName.begin(), commandName.end(), commandName.begin(), ::toupper);
 		if (commandName == "FUNC") {
 			size_t pos = str.find(' ');
 			std::string funcName = str.substr(0, pos);
@@ -127,6 +126,65 @@ int VirtualMachine::Execute(std::string commandName, std::string str, int row) {
 		}
 		return 0;
 	}
+
+	//Check if the first word is not a command but a variable name.
+	//It is checked before command name is transformed to all upper case.
+	if (floatVariables.find(commandName) != floatVariables.end()) {
+		std::map<std::string, float>::iterator firstVariable = floatVariables.find(commandName);
+		if (str[0] == '=') {
+			str = str.substr(1, str.size() - 1);
+			str = RemoveSpacesFromBeginning(str);
+			if (floatVariables.find(str) != floatVariables.end()) {
+				std::map <std::string, float>::iterator it = floatVariables.find(str);
+				firstVariable->second = it->second;
+			}
+			else if (CheckIfNum(str)) {
+				firstVariable->second = stof(str);
+			}
+			else if (str.find(' ') != std::string::npos) {
+				size_t pos = str.find(' ');
+				std::string presumedCall = str.substr(0, pos);
+				str.erase(0, pos + 1);
+				std::transform(presumedCall.begin(), presumedCall.end(), presumedCall.begin(), ::toupper);
+				if (presumedCall == "CALL") {
+					size_t returnValue = Call(str, row);
+					if (floatFuncParams.find(0) != floatFuncParams.end()) {
+						firstVariable->second = floatFuncParams[0];
+						floatFuncParams.erase(0);
+					}
+					else {
+						throw VirtualMachineException("Could not convert from string to float. Row: " + row);
+					}
+					return returnValue;
+				}
+			}
+			else {
+				throw VirtualMachineException(str + " cannot be converted to float.");
+			}
+		}
+		return 0;
+	}
+	else if (stringVariables.find(commandName) != stringVariables.end()) {
+		std::map<std::string, std::string>::iterator firstVariable = stringVariables.find(commandName);
+		if (str[0] == '=') {
+			str = str.substr(1, str.size() - 1);
+			str = RemoveSpacesFromBeginning(str);
+			if (stringVariables.find(str) != stringVariables.end()) {
+				std::map <std::string, std::string>::iterator it = stringVariables.find(str);
+				firstVariable->second = it->second;
+			}
+			else if (str[0] == '"' && str[str.size() - 1] == '"') {
+				str = str.substr(1, str.size() - 2);
+				firstVariable->second = str;
+			}
+			else {
+				throw VirtualMachineException(str + " cannot be converted to string.");
+			}
+		}
+		return 0;
+	}
+
+	std::transform(commandName.begin(), commandName.end(), commandName.begin(), ::toupper);
 
 	if (commandName == "ADD") {
 		size_t pos = str.find(" ");
@@ -248,55 +306,19 @@ int VirtualMachine::Execute(std::string commandName, std::string str, int row) {
 		}
 	}
 	else if (commandName == "CALL") {
-		size_t pos = str.find(" ");
-		std::string varValue;
-		std::string funcName = str.substr(0, pos);
-		str.erase(0, pos + 1);
-		std::map<std::string, int>::iterator it = functions.find(funcName);
-		if (it != functions.end()) {
-			if (str.length() >= 2 && str[0] == '(' && str[str.size() - 1] == ')') {
-				str = str.substr(1, str.size() - 2); //delete () from the parameter string
-				if (str.size() != 0) {
-					std::vector<std::string> parameters = ReadParams(str); //loading the parameters to a vector
-
-					//load the parameters to floatFuncParams and stringFuncParams vectors
-					size_t index = 0;
-					for (std::string parameter : parameters) {
-						if (parameter[0] == '"' && parameter[parameter.size() - 1] == '"') {
-							parameter = parameter.substr(1, parameter.size() - 2);
-							stringFuncParams.insert(std::pair<size_t, std::string>(index, parameter));
-						}
-						else if (CheckIfNum(parameter)) {
-							floatFuncParams.insert(std::pair<size_t, float>(index, stof(parameter)));
-						}
-						else if (floatVariables.find(parameter) != floatVariables.end()) {
-							std::map<std::string, float>::iterator floatIt = floatVariables.find(parameter);
-							floatFuncParams.insert(std::pair<size_t, float>(index, floatIt->second));
-						}
-						else if (stringVariables.find(parameter) != stringVariables.end()) {
-							std::map<std::string, std::string>::iterator stringIt = stringVariables.find(parameter);
-							stringFuncParams.insert(std::pair<size_t, std::string>(index, stringIt->second));
-						}
-						++index;
-					}
-				}
-				//set return row index value
-				returnRows.push_back(row + 2);
-
-				return it->second;
-			}
-			else {
-				throw VirtualMachineException("Function parameters are not in proper format: " + str);
-			}
-		}
-		else {
-			throw VirtualMachineException("No such method is defined: " + funcName);
-		}
+		return Call(str, row);
 	}
 	else if (commandName == "FUNC") {
-		size_t pos = str.find(" ");
+		size_t pos;
 		std::string varValue;
-		str.erase(0, pos + 1);
+		if (str.find(' ') != std::string::npos) {
+			pos = str.find(" ");
+			str.erase(0, pos + 1);
+		}
+		else {
+			pos = str.find('(');
+			str.erase(0, pos);
+		}
 		if (str.length() >= 2 && str[0] == '(' && str[str.size() - 1] == ')') {
 			str = str.substr(1, str.size() - 2); //delete () from the parameter string
 			if (str.size() != 0) {
@@ -311,7 +333,7 @@ int VirtualMachine::Execute(std::string commandName, std::string str, int row) {
 						floatVariables.insert(std::pair<std::string, float>(parameter, floatIt->second));
 						floatFuncParams.erase(index);
 					}
-					else if(stringFuncParams.find(index) != stringFuncParams.end()){
+					else if (stringFuncParams.find(index) != stringFuncParams.end()) {
 						std::map<size_t, std::string>::iterator strIt = stringFuncParams.find(index);
 						stringVariables.insert(std::pair<std::string, std::string>(parameter, strIt->second));
 						stringFuncParams.erase(index);
@@ -323,6 +345,25 @@ int VirtualMachine::Execute(std::string commandName, std::string str, int row) {
 				}
 			}
 		}
+	}
+	else if (commandName == "RETURN") {
+		if (str[0] == '"' && str[str.size() - 1] == '"') {
+			stringFuncParams.insert(std::pair<size_t, std::string>(0, str.substr(1, str.size() - 2)));
+		}
+		else if (CheckIfNum(str)) {
+			floatFuncParams.insert(std::pair<size_t, float>(0, stof(str)));
+		}
+		else if (floatVariables.find(str) != floatVariables.end()) {
+			std::map<std::string, float>::iterator it = floatVariables.find(str);
+			floatFuncParams.insert(std::pair<size_t, float>(0, it->second));
+		}
+		else if (stringVariables.find(str) != stringVariables.end()) {
+			std::map<std::string, std::string>::iterator it = stringVariables.find(str);
+			stringFuncParams.insert(std::pair < size_t, std::string>(0, it->second));
+		}
+		int value = returnRows[returnRows.size() - 1];
+		returnRows.pop_back();
+		return value;
 	}
 	else if (commandName == "") {
 		int value = returnRows[returnRows.size() - 1];
@@ -352,14 +393,10 @@ std::vector<std::string> VirtualMachine::ReadParams(std::string params) {
 			pos = params.find(',');
 			varValue = params.substr(0, pos);
 			params.erase(0, pos + 1);
-			while (varValue.find(' ') == 0) { //deleting plus spaces from the beginning of the variable value
-				varValue = varValue.substr(1, params.size() - 1);
-			}
+			varValue = RemoveSpacesFromBeginning(varValue);
 			parameters.push_back(varValue);
 		}
-		while (params.find(' ') == 0) { //deleting plus spaces from the beginning of the variable value
-			params = params.substr(1, params.size() - 1);
-		}
+		params = RemoveSpacesFromBeginning(params);
 		parameters.push_back(params); //getting the last parameter
 	}
 	return parameters;
@@ -402,4 +439,73 @@ bool VirtualMachine::CheckIfNum(std::string str) {
 		}
 	}
 	return true;
+}
+
+/// <summary>
+/// Well it removes the spaces from the beginning of the given string.
+/// </summary>
+/// <param name="str">The string to be trimmed.</param>
+/// <returns>The str without the spaces.</returns>
+std::string VirtualMachine::RemoveSpacesFromBeginning(std::string str) {
+	while (str.find(' ') == 0) { //deleting plus spaces from the beginning of the variable value
+		str = str.substr(1, str.size() - 1);
+	}
+	return str;
+}
+
+//Call command inside functions so it can be called by other functions/commands
+size_t VirtualMachine::Call(std::string params, size_t row) {
+	size_t pos;
+	std::string varValue;
+	std::string funcName;
+	if (params.find(' ') != std::string::npos) {
+		pos = params.find(" ");
+		funcName = params.substr(0, pos);
+		params.erase(0, pos + 1);
+	}
+	else {
+		pos = params.find('(');
+		funcName = params.substr(0, pos);
+		params.erase(0, pos);
+	}
+	std::map<std::string, int>::iterator it = functions.find(funcName);
+	if (it != functions.end()) {
+		if (params.length() >= 2 && params[0] == '(' && params[params.size() - 1] == ')') {
+			params = params.substr(1, params.size() - 2); //delete () from the parameter string
+			if (params.size() != 0) {
+				std::vector<std::string> parameters = ReadParams(params); //loading the parameters to a vector
+
+				//load the parameters to floatFuncParams and stringFuncParams vectors
+				size_t index = 0;
+				for (std::string parameter : parameters) {
+					if (parameter[0] == '"' && parameter[parameter.size() - 1] == '"') {
+						parameter = parameter.substr(1, parameter.size() - 2);
+						stringFuncParams.insert(std::pair<size_t, std::string>(index, parameter));
+					}
+					else if (CheckIfNum(parameter)) {
+						floatFuncParams.insert(std::pair<size_t, float>(index, stof(parameter)));
+					}
+					else if (floatVariables.find(parameter) != floatVariables.end()) {
+						std::map<std::string, float>::iterator floatIt = floatVariables.find(parameter);
+						floatFuncParams.insert(std::pair<size_t, float>(index, floatIt->second));
+					}
+					else if (stringVariables.find(parameter) != stringVariables.end()) {
+						std::map<std::string, std::string>::iterator stringIt = stringVariables.find(parameter);
+						stringFuncParams.insert(std::pair<size_t, std::string>(index, stringIt->second));
+					}
+					++index;
+				}
+			}
+			//set return row index value
+			returnRows.push_back(row + 2);
+
+			return it->second;
+		}
+		else {
+			throw VirtualMachineException("Function parameters are not in proper format: " + params);
+		}
+	}
+	else {
+		throw VirtualMachineException("No such method is defined: " + funcName);
+	}
 }

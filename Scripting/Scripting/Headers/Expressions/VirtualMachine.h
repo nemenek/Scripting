@@ -27,7 +27,7 @@ public:
 	/// <param name="path">The path to the file.</param>
 	void ExecuteFromFile(std::string path);
 private:
-	int Execute(std::string commandName, std::string value, int row);
+	size_t Execute(std::string commandName, std::string value, int row);
 
 	std::map <std::string, float> floatVariables; //stores the float variables. The name of the variable is the key. Also stores integer values.
 
@@ -38,6 +38,8 @@ private:
 	std::string GetNextStringValue(std::string str);
 	bool CheckIfNum(std::string str);
 	std::vector<std::string> ReadParams(std::string params);
+	std::string RemoveSpacesFromBeginning(std::string str);
+	size_t Call(std::string params, size_t row);
 
 	std::map<std::string, int> functions; //stores the name of the function (key), and the line where the function begins. Initialized at FUNC command call
 
@@ -45,7 +47,7 @@ private:
 
 	std::vector<int> returnRows; //set at call command, stores the line where the program should return after finsihed executing called function
 
-	//the values of the function parameters
+	//the values of the function parameters, also return value goes there
 	std::map<size_t, float> floatFuncParams;
 	std::map<size_t, std::string> stringFuncParams;
 };

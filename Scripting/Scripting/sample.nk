@@ -1,15 +1,9 @@
-func sayHi (name, text)
-print name
-print text
-print "\n"
-delete name
-delete text
-
-func printGreatThingsAboutMark (message)
-call sayHi ("Mark", message)
-delete name
-delete message
+func asd ()
+return 1
 
 start
-call printGreatThingsAboutMark (" is great")
+create num 0
+num = call asd()
+print num
+print "\n"
 end
