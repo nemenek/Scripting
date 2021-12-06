@@ -1,11 +1,15 @@
-func printGreatThings (message)
-create name "Mark"
+func sayHi (name, text)
 print name
-print message
+print text
 print "\n"
+delete name
+delete text
+
+func printGreatThingsAboutMark (message)
+call sayHi ("Mark", message)
 delete name
 delete message
 
 start
-call printGreatThings (" is great")
+call printGreatThingsAboutMark (" is great")
 end
