@@ -45,6 +45,7 @@ private:
 
 	std::vector<int> returnRows; //set at call command, stores the line where the program should return after finsihed executing called function
 
+	//the values of the function parameters
 	std::map<size_t, float> floatFuncParams;
 	std::map<size_t, std::string> stringFuncParams;
 };

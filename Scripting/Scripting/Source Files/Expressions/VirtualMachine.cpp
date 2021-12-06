@@ -309,14 +309,17 @@ int VirtualMachine::Execute(std::string commandName, std::string str, int row) {
 					floatIt = floatFuncParams.find(index);
 					if (floatIt != floatFuncParams.end()) {
 						floatVariables.insert(std::pair<std::string, float>(parameter, floatIt->second));
+						floatFuncParams.erase(index);
 					}
 					else if(stringFuncParams.find(index) != stringFuncParams.end()){
 						std::map<size_t, std::string>::iterator strIt = stringFuncParams.find(index);
 						stringVariables.insert(std::pair<std::string, std::string>(parameter, strIt->second));
+						stringFuncParams.erase(index);
 					}
 					else {
 						throw VirtualMachineException("Error at function parameters! Parameter's name: " + parameter);
 					}
+					++index;
 				}
 			}
 		}
