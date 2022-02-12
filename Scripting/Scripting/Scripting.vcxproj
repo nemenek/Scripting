@@ -141,9 +141,11 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Source Files\Expressions\VirtualMachine.cpp" />
+    <ClCompile Include="Source Files\Node.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Expressions\VirtualMachine.h" />
+    <ClInclude Include="Headers\Node.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

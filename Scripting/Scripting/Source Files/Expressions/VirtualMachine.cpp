@@ -1,4 +1,5 @@
 #include "../../Headers/Expressions/VirtualMachine.h"
+#include "../../Headers/Node.h"
 #include <fstream>
 #include <iostream>
 #include <algorithm>
@@ -8,7 +9,7 @@ VirtualMachineException::VirtualMachineException(std::string msg) : message(msg)
 std::string VirtualMachineException::what() {
 	return message;
 }
-VirtualMachine::VirtualMachine() : mainFuncReached(false) {}
+VirtualMachine::VirtualMachine() {}
 
 void VirtualMachine::ExecuteFromScript(std::string script) {
 	std::vector<std::string> lines;
@@ -26,6 +27,7 @@ void VirtualMachine::ExecuteFromScript(std::string script) {
 	size_t pos = 0;
 	std::string commandName;
 	int jumpTo = 0;
+	bool mainFuncReached = false;
 
 	for (size_t i = 0; i < lines.size(); i++) {
 		if (lines[i] == "END" || lines[i] == "end") { //empty line means the code is over
@@ -46,7 +48,7 @@ void VirtualMachine::ExecuteFromScript(std::string script) {
 		commandName = tempString.substr(0, pos); //getting the values from the line
 		tempString.erase(0, pos + 1);
 
-		jumpTo = Execute(commandName, tempString, i); //jumps in script line accordint to return value
+		jumpTo = Execute(commandName, tempString, i, mainFuncReached); //jumps in script line accordint to return value
 		if (jumpTo != 0) {
 			if (jumpTo > 0) {
 				i = jumpTo - 2;
@@ -76,7 +78,8 @@ void VirtualMachine::ExecuteFromFile(std::string path) {
 	size_t pos = 0;
 	std::string commandName;
 	int jumpTo = 0;
-	std::string tempString = "";
+	std::string tempString = "";\
+		bool mainFuncReached = false;
 
 	for (size_t i = 0; i < lines.size(); i++) {
 		if (lines[i] == "END" || lines[i] == "end") { //empty line means the code is over
@@ -96,7 +99,7 @@ void VirtualMachine::ExecuteFromFile(std::string path) {
 		pos = tempString.find(" ");
 		commandName = tempString.substr(0, pos);
 		tempString.erase(0, pos + 1);
-		jumpTo = Execute(commandName, tempString, i);
+		jumpTo = Execute(commandName, tempString, i, mainFuncReached);
 		if (jumpTo != 0) {
 			if (jumpTo > 0) {
 				i = jumpTo - 2;
@@ -115,7 +118,7 @@ void VirtualMachine::ExecuteFromFile(std::string path) {
 /// <param name="str">The command parameters. even with more parameters it should be one string, all the parameters seperated with space.</param>
 /// <param name="row">The index of the row which is being executed.</param>
 /// <returns>Greater than zero, if the program should jump to a specific row in the program. Less than zero if the program should skip a specific number of rows (-2 skips two rows(right now it only uses -1 as return value less than 0)). 0 if the program execution should follow in order.</returns>
-size_t VirtualMachine::Execute(std::string commandName, std::string str, int row) {
+size_t VirtualMachine::Execute(std::string commandName, std::string str, int row, bool mainFuncReached) {
 	//function defining
 	if (!mainFuncReached) {
 		std::transform(commandName.begin(), commandName.end(), commandName.begin(), ::toupper);
@@ -129,34 +132,19 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 
 	//Check if the first word is not a command but a variable name.
 	//It is checked before command name is transformed to all upper case.
-	if (floatVariables.find(commandName) != floatVariables.end()) {
+	/*if (floatVariables.find(commandName) != floatVariables.end()) {
 		std::map<std::string, float>::iterator firstVariable = floatVariables.find(commandName);
 		if (str[0] == '=') {
 			str = str.substr(1, str.size() - 1);
 			str = RemoveSpacesFromBeginning(str);
+			std::string firstValue = GetFirstVariable(str);
+			str = str.substr(str.find(' ') + 1, str.length());
 			if (floatVariables.find(str) != floatVariables.end()) {
 				std::map <std::string, float>::iterator it = floatVariables.find(str);
 				firstVariable->second = it->second;
 			}
 			else if (CheckIfNum(str)) {
 				firstVariable->second = stof(str);
-			}
-			else if (str.find(' ') != std::string::npos) {
-				size_t pos = str.find(' ');
-				std::string presumedCall = str.substr(0, pos);
-				str.erase(0, pos + 1);
-				std::transform(presumedCall.begin(), presumedCall.end(), presumedCall.begin(), ::toupper);
-				if (presumedCall == "CALL") {
-					size_t returnValue = Call(str, row);
-					if (floatFuncParams.find(0) != floatFuncParams.end()) {
-						firstVariable->second = floatFuncParams[0];
-						floatFuncParams.erase(0);
-					}
-					else {
-						throw VirtualMachineException("Could not convert from string to float. Row: " + row);
-					}
-					return returnValue;
-				}
 			}
 			else {
 				throw VirtualMachineException(str + " cannot be converted to float.");
@@ -182,10 +170,59 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 			}
 		}
 		return 0;
+	}*/
+	if (floatVariables.find(commandName) != floatVariables.end()) {
+		if (str[0] == '=') {
+			expressionTree = Node();
+			str = str.substr(1, str.length() - 1);
+			str = RemoveSpacesFromBeginning(str);
+			Node* nextExp = Node::getNextExpression(&expressionTree);
+			while (nextExp!=nullptr) {
+				if (str[0] == '(') {
+					addExpression(nextExp, new Node());
+					str = str.substr(1, str.length() - 1);
+					str = RemoveSpacesFromBeginning(str);
+				}
+				else {
+					size_t pos = str.find(' ');
+					std::string var;
+					if (pos != std::string::npos) {
+						var = str.substr(0, pos);
+						str = str.substr(pos, str.length() - 1);
+						str = RemoveSpacesFromBeginning(str);
+					}
+					if (floatVariables.find(var) != floatVariables.end()) {
+						addExpression(nextExp, new Node(floatVariables.find(var)->first));
+					}
+					else if (CheckIfNum(var)) {
+						addExpression(nextExp, new Node(var));
+					}
+					else if (var == ")") {
+						str = str.substr(1, str.length() - 1);
+					}
+					else if (var.length() == 1) {
+						if (nextExp->getData() == "") {
+							nextExp->setData(var);
+						}
+						else {
+							addExpression(nextExp, new Node(var));
+						}
+					}
+					else {
+						throw VirtualMachineException("Expression evaluation error");
+					}
+				}
+				nextExp = Node::getNextExpression(&expressionTree);
+			}
+		}
 	}
 
+	;
+
+	///To all upper case.
 	std::transform(commandName.begin(), commandName.end(), commandName.begin(), ::toupper);
 
+	//Command execution
 	if (commandName == "ADD") {
 		size_t pos = str.find(" ");
 		std::string varName = str.substr(0, pos);
@@ -370,6 +407,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		returnRows.pop_back();
 		return value;
 	}
+	
 	else {
 		throw VirtualMachineException("No such command: " + commandName);
 	}
@@ -507,5 +545,31 @@ size_t VirtualMachine::Call(std::string params, size_t row) {
 	}
 	else {
 		throw VirtualMachineException("No such method is defined: " + funcName);
+	}
+}
+
+/// <summary>
+/// Returns the string lasting to the first ' ' character. If no space is present
+/// it returns the whole string.
+/// </summary>
+/// <param name="str">The string to be checked.</param>
+/// <returns>
+/// The string value from the first character to the first space
+/// or the end of the string if no space is present.
+/// </returns>
+std::string VirtualMachine::GetFirstVariable(std::string str) {
+	size_t spacePos = str.find(' ');
+	if (spacePos != std::string::npos) {
+		str = str.substr(0, spacePos);
+	}
+	return str;
+}
+
+void VirtualMachine::addExpression(Node* parent, Node* child) {
+	if (parent->getLeft() == nullptr) {
+		parent->addLeft(child);
+	}
+	else {
+		parent->addRight(child);
 	}
 }

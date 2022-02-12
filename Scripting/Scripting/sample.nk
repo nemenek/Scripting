@@ -1,9 +1,11 @@
-func asd ()
-return 1
-
 start
-create num 0
-num = call asd()
-print num
+create a 1
+create c 2
+create b 3
+a = a * (( c + 2 ) - ( b * c ))
+print a
 print "\n"
+delete a
+delete b
+delete c
 end

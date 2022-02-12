@@ -1,3 +1,4 @@
+#include "../Node.h"
 #include <vector>
 #include <stack>
 #include <map>
@@ -27,11 +28,7 @@ public:
 	/// <param name="path">The path to the file.</param>
 	void ExecuteFromFile(std::string path);
 private:
-	size_t Execute(std::string commandName, std::string value, int row);
-
-	std::map <std::string, float> floatVariables; //stores the float variables. The name of the variable is the key. Also stores integer values.
-
-	std::map<std::string, std::string> stringVariables; //stores the string variables. The name of the variable is the key.
+	size_t Execute(std::string commandName, std::string value, int row, bool mainFuncReached);
 
 	//private functions
 	float GetNextFloatValue(std::string str);
@@ -40,14 +37,22 @@ private:
 	std::vector<std::string> ReadParams(std::string params);
 	std::string RemoveSpacesFromBeginning(std::string str);
 	size_t Call(std::string params, size_t row);
+	std::string GetFirstVariable(std::string str);
+	float SolveRow(std::string row);
+	void addExpression(Node* parent, Node* child);
+
+	std::map <std::string, float> floatVariables; //stores the float variables. The name of the variable is the key. Also stores integer values.
+
+	std::map<std::string, std::string> stringVariables; //stores the string variables. The name of the variable is the key.
 
 	std::map<std::string, int> functions; //stores the name of the function (key), and the line where the function begins. Initialized at FUNC command call
-
-	bool mainFuncReached; //indicates if the program has reached the main function, it is needed so I can tell if I should start executing the commands
 
 	std::vector<int> returnRows; //set at call command, stores the line where the program should return after finsihed executing called function
 
 	//the values of the function parameters, also return value goes there
 	std::map<size_t, float> floatFuncParams;
 	std::map<size_t, std::string> stringFuncParams;
+
+	//expression tree
+	Node expressionTree;
 };
