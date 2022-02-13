@@ -45,20 +45,15 @@ Node* Node::getNextExpression(Node* currentNode) {
 		if (currentNode->getLeft() == nullptr) {
 			return currentNode;
 		}
-		else if (currentNode->getLeft()->getData() == "") {
-			return getNextExpression(currentNode->getLeft());
+		Node* leftSideResult = getNextExpression(currentNode->getLeft());
+		if (leftSideResult != nullptr) {
+			return leftSideResult;
 		}
 		else if (currentNode->getRight() == nullptr) {
 			return currentNode;
 		}
 		else {
-			Node* leftSideResult = getNextExpression(currentNode->getLeft());
-			if (leftSideResult == nullptr) {
-				return getNextExpression(currentNode->getRight());
-			}
-			else {
-				return leftSideResult;
-			}
+			return getNextExpression(currentNode->getRight());
 		}
 	}
 	return nullptr;

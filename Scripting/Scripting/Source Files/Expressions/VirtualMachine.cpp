@@ -173,11 +173,12 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 	}*/
 	if (floatVariables.find(commandName) != floatVariables.end()) {
 		if (str[0] == '=') {
+			//Building expression tree
 			expressionTree = Node();
 			str = str.substr(1, str.length() - 1);
 			str = RemoveSpacesFromBeginning(str);
 			Node* nextExp = Node::getNextExpression(&expressionTree);
-			while (nextExp!=nullptr) {
+			while (nextExp != nullptr && str.length() != 0) {
 				if (str[0] == '(') {
 					addExpression(nextExp, new Node());
 					str = str.substr(1, str.length() - 1);
@@ -191,6 +192,10 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 						str = str.substr(pos, str.length() - 1);
 						str = RemoveSpacesFromBeginning(str);
 					}
+					else {
+						var = str;
+						str = "";
+					}
 					if (floatVariables.find(var) != floatVariables.end()) {
 						addExpression(nextExp, new Node(floatVariables.find(var)->first));
 					}
@@ -198,7 +203,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 						addExpression(nextExp, new Node(var));
 					}
 					else if (var == ")") {
-						str = str.substr(1, str.length() - 1);
+						/*str = str.substr(1, str.length() - 1);*/
 					}
 					else if (var.length() == 1) {
 						if (nextExp->getData() == "") {
@@ -215,6 +220,21 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 				nextExp = Node::getNextExpression(&expressionTree);
 			}
 		}
+		// Decoding expression tree
+		std::map<std::string, float>::iterator it = floatVariables.find(commandName);
+		if (expressionTree.getData() == "") {
+			if (expressionTree.getLeft()->getData() != "") {
+
+				it->second = GetNextFloatValue(expressionTree.getLeft()->getData());
+			}
+			else {
+				throw VirtualMachineException("Expression evaluation error");
+			}
+		}
+		else {
+			it->second = EvaluateExpression(expressionTree.getData()[0], expressionTree.getLeft(), expressionTree.getRight());
+		}
+		return 0;
 	}
 
 	;
@@ -407,7 +427,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		returnRows.pop_back();
 		return value;
 	}
-	
+
 	else {
 		throw VirtualMachineException("No such command: " + commandName);
 	}
@@ -572,4 +592,54 @@ void VirtualMachine::addExpression(Node* parent, Node* child) {
 	else {
 		parent->addRight(child);
 	}
+}
+
+float VirtualMachine::EvaluateExpression(char operation, Node* first, Node* second) {
+	float left = 0.0f;
+	float right = 0.0f;
+	if (isOperation(first->getData())) {
+		left = EvaluateExpression(first->getData()[0], first->getLeft(), first->getRight());
+	}
+	if (isOperation(second->getData())) {
+		right = EvaluateExpression(second->getData()[0], second->getLeft(), second->getRight());
+	}
+	std::map<std::string, float>::iterator it;
+	if (left == 0.0f) {
+		it = floatVariables.find(first->getData());
+		if (it != floatVariables.end()) {
+			left = it->second;
+		}
+		else {
+			left = std::stof(first->getData());
+		}
+	}
+	if (right == 0.0f) {
+		it = floatVariables.find(second->getData());
+		if (it != floatVariables.end()) {
+			right = it->second;
+		}
+		else {
+			right = std::stof(second->getData());
+		}
+	}
+	if (operation == '+') {
+		return left + right;
+	}
+	else if (operation == '-') {
+		return left - right;
+	}
+	else if (operation == '/') {
+		return left / right;
+	}
+	else if (operation == '*') {
+		return left * right;
+	}
+}
+
+bool VirtualMachine::isOperation(std::string str) {
+	if (str.length() != 1 || (str.find('+') == std::string::npos && str.find('-') == std::string::npos
+		&& str.find('*') == std::string::npos && str.find('/') == std::string::npos)) {
+		return false;
+	}
+	return true;
 }

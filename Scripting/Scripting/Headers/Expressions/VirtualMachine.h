@@ -40,6 +40,8 @@ private:
 	std::string GetFirstVariable(std::string str);
 	float SolveRow(std::string row);
 	void addExpression(Node* parent, Node* child);
+	float EvaluateExpression(char operation, Node* first, Node* second);
+	bool isOperation(std::string str);
 
 	std::map <std::string, float> floatVariables; //stores the float variables. The name of the variable is the key. Also stores integer values.
 
