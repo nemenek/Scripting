@@ -37,7 +37,6 @@ Node* Node::getRight() {
 	return this->right;
 }
 
-//TODO: gives wrong answer.
 Node* Node::getNextExpression(Node* currentNode) {
 	if (currentNode->getData() == "+" || currentNode->getData() == "-"
 		|| currentNode->getData() == "*" || currentNode->getData() == "/"

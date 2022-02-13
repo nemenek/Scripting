@@ -36,9 +36,8 @@ private:
 	bool CheckIfNum(std::string str);
 	std::vector<std::string> ReadParams(std::string params);
 	std::string RemoveSpacesFromBeginning(std::string str);
-	size_t Call(std::string params, size_t row);
+std::string Call(std::string params, size_t row);
 	std::string GetFirstVariable(std::string str);
-	float SolveRow(std::string row);
 	void addExpression(Node* parent, Node* child);
 	float EvaluateExpression(char operation, Node* first, Node* second);
 	bool isOperation(std::string str);

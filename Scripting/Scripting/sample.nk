@@ -1,8 +1,18 @@
+func Asd (e,g)
+create h 0
+h = e + g
+delete e
+delete g
+return h
+
 start
 create a 5
 create c 2
 create b 3
-a =  (( a * c ) / c ) * ( b * ( 20 / b ))
+create d 2.5
+create l 0
+l = CALL Asd(c,b)
+a =  ( b + c) + l
 print a
 print "\n"
 delete a
