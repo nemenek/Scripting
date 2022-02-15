@@ -1,6 +1,6 @@
 func Asd (e,g)
 create h 0
-h = e + g
+h = e * g
 delete e
 delete g
 return h
@@ -12,10 +12,13 @@ create b 3
 create d 2.5
 create l 0
 l = CALL Asd(c,b)
-a =  ( b + c) + l
+a = a * ((b+c) - (l-a))
+#26
 print a
 print "\n"
 delete a
 delete b
 delete c
+delete l
+delete h
 end

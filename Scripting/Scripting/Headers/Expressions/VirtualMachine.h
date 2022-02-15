@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 
-class VirtualMachineException{
+class VirtualMachineException {
 public:
 	VirtualMachineException(std::string cause);
 	std::string what();
@@ -36,7 +36,7 @@ private:
 	bool CheckIfNum(std::string str);
 	std::vector<std::string> ReadParams(std::string params);
 	std::string RemoveSpacesFromBeginning(std::string str);
-std::string Call(std::string params, size_t row);
+	size_t Call(std::string params, size_t row);
 	std::string GetFirstVariable(std::string str);
 	void addExpression(Node* parent, Node* child);
 	float EvaluateExpression(char operation, Node* first, Node* second);
@@ -50,9 +50,12 @@ std::string Call(std::string params, size_t row);
 
 	std::vector<int> returnRows; //set at call command, stores the line where the program should return after finsihed executing called function
 
-	//the values of the function parameters, also return value goes there
+	//the values of the function parameters
 	std::map<size_t, float> floatFuncParams;
 	std::map<size_t, std::string> stringFuncParams;
+
+	//stores the function return value until it is read in the next step
+	std::string returnValue;
 
 	//expression tree
 	Node expressionTree;
