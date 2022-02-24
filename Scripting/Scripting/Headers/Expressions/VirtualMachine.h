@@ -3,6 +3,7 @@
 #include <stack>
 #include <map>
 #include <string>
+#include <functional>
 
 class VirtualMachineException {
 public:
@@ -27,6 +28,10 @@ public:
 	/// </summary>
 	/// <param name="path">The path to the file.</param>
 	void ExecuteFromFile(std::string path);
+
+
+	void AddExternalFunction(std::string name, void (*funcPointer)(void));
+
 private:
 	size_t Execute(std::string commandName, std::string value, int row, bool mainFuncReached);
 
@@ -47,6 +52,7 @@ private:
 	std::map<std::string, std::string> stringVariables; //stores the string variables. The name of the variable is the key.
 
 	std::map<std::string, int> functions; //stores the name of the function (key), and the line where the function begins. Initialized at FUNC command call
+	std::map<std::string, void(*)()> externalFunctions;
 
 	std::vector<int> returnRows; //set at call command, stores the line where the program should return after finsihed executing called function
 

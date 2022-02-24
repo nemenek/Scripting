@@ -12,12 +12,19 @@ std::string VirtualMachineException::what() {
 
 VirtualMachine::VirtualMachine() {}
 
+//TODO: add external func call to call command
+void VirtualMachine::AddExternalFunction(std::string name, void (*funcPointer)(void)) {
+	//functions.insert(std::pair<std::string, int>(name, -1));
+	externalFunctions.insert(std::pair < std::string, void(*)()>(name, funcPointer));
+}
+
 void VirtualMachine::ExecuteFromScript(std::string script) {
 	std::vector<std::string> lines;
 	std::string tempString = "";
 	for (char item : script) {
 		if (item == '\n') {
 			lines.push_back(tempString);
+			tempString = "";
 		}
 		else {
 			tempString += item;
@@ -39,6 +46,7 @@ void VirtualMachine::ExecuteFromScript(std::string script) {
 		}
 		else if (lines[i] == "START" || lines[i] == "start") {
 			mainFuncReached = true;
+			continue;
 		}
 		else if (lines[i] == "") {
 			continue;
@@ -194,23 +202,6 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 						str = str.substr(1, str.length() - 1);
 					}
 					str = RemoveSpacesFromBeginning(str);
-					/*if (var[var.length() - 1] == '+' ||
-						var[var.length() - 1] == '-' ||
-						var[var.length() - 1] == '*' ||
-						var[var.length() - 1] == '/' ||
-						var[var.length() - 1] == ')' ||
-						var[var.length() - 1] == '(') {
-						str = var[var.length() - 1] + str;
-						var = var.substr(0, var.length() - 2);
-					}
-					if (var[0] == '+' ||
-						var[0] == '-' ||
-						var[0] == '*' ||
-						var[0] == '/' ||
-						var[0] == ')' ||
-						var[0] == '(') {
-						str = var.substr(1, var.length() - 1) + str;
-					}*/
 					if (floatVariables.find(var) != floatVariables.end()) {
 						addExpression(nextExp, new Node(floatVariables.find(var)->first));
 					}
@@ -601,6 +592,11 @@ size_t VirtualMachine::Call(std::string params, size_t row) {
 		else {
 			throw VirtualMachineException("Function parameters are not in proper format: " + params);
 		}
+	}
+	//Review that
+	else if (externalFunctions.find(funcName) != externalFunctions.end()) {
+		externalFunctions.find(funcName)->second();
+		return 0;
 	}
 	else {
 		throw VirtualMachineException("No such method is defined: " + funcName);
