@@ -2,10 +2,12 @@
 #include <iostream>
 
 int main() {
-	void writeIt();
+	void writeIt(std::string param);
+	void addNums(float first, float second);
 
 	VirtualMachine vm;
 	vm.AddExternalFunction("writeIt", writeIt);
+	vm.AddExternalFunction("addNums", addNums);
 	try {
 		vm.ExecuteFromFile("sample.nk");
 		//vm.ExecuteFromScript("START\nCREATE i 5\nprint i\nEND");
@@ -15,6 +17,11 @@ int main() {
 	}
 }
 
-void writeIt() {
-	std::cout << "It is written in an external function" << std::endl;
+void writeIt(std::string param) {
+	std::cout <<  param << std::endl;
+}
+
+void addNums(float first, float second) {
+	float result = first + second;
+	std::cout << result << std::endl;
 }

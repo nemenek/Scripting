@@ -32,6 +32,10 @@ public:
 
 	void AddExternalFunction(std::string name, void (*funcPointer)(void));
 
+	void AddExternalFunction(std::string name, void (*funcPointer)(std::string));
+
+	void AddExternalFunction(std::string name, void (*funcPointer)(float, float));
+
 private:
 	size_t Execute(std::string commandName, std::string value, int row, bool mainFuncReached);
 
@@ -52,7 +56,9 @@ private:
 	std::map<std::string, std::string> stringVariables; //stores the string variables. The name of the variable is the key.
 
 	std::map<std::string, int> functions; //stores the name of the function (key), and the line where the function begins. Initialized at FUNC command call
-	std::map<std::string, void(*)()> externalFunctions;
+	std::map<std::string, void (*)()> externalFunctions; //stores external functions with no parameter
+	std::map<std::string, void (*)(std::string)> externalFunctionsString; //stores external functions with string parameter
+	std::map<std::string, void (*)(float, float)> externalFunctionsFloat; //stores external functions with string parameter
 
 	std::vector<int> returnRows; //set at call command, stores the line where the program should return after finsihed executing called function
 

@@ -18,6 +18,16 @@ void VirtualMachine::AddExternalFunction(std::string name, void (*funcPointer)(v
 	externalFunctions.insert(std::pair < std::string, void(*)()>(name, funcPointer));
 }
 
+void VirtualMachine::AddExternalFunction(std::string name, void (*funcPointer)(std::string)) {
+	//functions.insert(std::pair<std::string, int>(name, -1));
+	externalFunctionsString.insert(std::pair < std::string, void(*)(std::string)>(name, funcPointer));
+}
+
+void VirtualMachine::AddExternalFunction(std::string name, void (*funcPointer)(float, float)) {
+	//functions.insert(std::pair<std::string, int>(name, -1));
+	externalFunctionsFloat.insert(std::pair < std::string, void(*)(float, float)>(name, funcPointer));
+}
+
 void VirtualMachine::ExecuteFromScript(std::string script) {
 	std::vector<std::string> lines;
 	std::string tempString = "";
@@ -169,7 +179,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 					}
 					if (var.find('+') != std::string::npos && var.length() != 1) {
 						size_t pos = var.find('+');
-						str = var.substr(pos, var.length() ) + str;
+						str = var.substr(pos, var.length()) + str;
 						var = var.substr(0, pos);
 					}
 					if (var.find('-') != std::string::npos && var.length() != 1) {
@@ -405,7 +415,6 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 			str.erase(0, pos);
 		}
 		if (str.length() >= 2 && str[0] == '(' && str[str.size() - 1] == ')') {
-			str = str.substr(1, str.size() - 2); //delete '(' and ')' from the parameter string
 			if (str.size() != 0) {
 				std::vector<std::string> parameters = ReadParams(str); //loading the parameters to a vector
 
@@ -469,22 +478,33 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 /// <param name="params">The parameters in a string format.</param>
 /// <returns>The vector which stores the parameters.</returns>
 std::vector<std::string> VirtualMachine::ReadParams(std::string params) {
+	params = params.substr(1, params.size() - 2); //delete () from the parameter string
 	std::vector<std::string> parameters;
 	size_t pos;
 	std::string varValue;
-	if (params.find(',') == std::string::npos) {
-		parameters.push_back(params);
-	}
-	else {
-		while (params.find(',') != std::string::npos) { //getting values while there is a comma in the parameters.
-			pos = params.find(',');
-			varValue = params.substr(0, pos);
-			params.erase(0, pos + 1);
-			varValue = RemoveSpacesFromBeginning(varValue);
-			parameters.push_back(varValue);
-		}
+	while (params.length() != 0) {
 		params = RemoveSpacesFromBeginning(params);
-		parameters.push_back(params); //getting the last parameter
+		if (params[0] == '"') {
+			params = params.substr(1, params.length() - 1);
+			pos = params.find('"');
+			parameters.push_back(params.substr(0, pos));
+			params = params.substr(pos + 1, params.length() - 1);
+			if (params.find(',') != std::string::npos) {
+				pos = params.find(',');
+				params = params.substr(pos + 1, params.length() - 1);
+			}
+		}
+		else {
+			pos = params.find(',');
+			if (pos == std::string::npos) {
+				parameters.push_back(params);
+				params = "";
+			}
+			else {
+				parameters.push_back(params.substr(0, pos));
+				params = params.substr(pos + 1, params.length() - 1);
+			}
+		}
 	}
 	return parameters;
 }
@@ -545,7 +565,9 @@ size_t VirtualMachine::Call(std::string params, size_t row) {
 	size_t pos;
 	std::string varValue;
 	std::string funcName;
-	if (params.find(' ') != std::string::npos) {
+	int asdasd = std::string::npos;
+	int asd = params.find('"');
+	if (params.find(' ') != std::string::npos && (params.find(' ') < params.find('"') || params.find('"') == std::string::npos) && params.find(' ') < params.find('(')) {
 		pos = params.find(" ");
 		funcName = params.substr(0, pos);
 		params.erase(0, pos + 1);
@@ -558,18 +580,14 @@ size_t VirtualMachine::Call(std::string params, size_t row) {
 	std::map<std::string, int>::iterator it = functions.find(funcName);
 	if (it != functions.end()) {
 		if (params.length() >= 2 && params[0] == '(' && params[params.size() - 1] == ')') {
-			params = params.substr(1, params.size() - 2); //delete () from the parameter string
+
 			if (params.size() != 0) {
 				std::vector<std::string> parameters = ReadParams(params); //loading the parameters to a vector
 
 				//load the parameters to floatFuncParams and stringFuncParams vectors
 				size_t index = 0;
 				for (std::string parameter : parameters) {
-					if (parameter[0] == '"' && parameter[parameter.size() - 1] == '"') {
-						parameter = parameter.substr(1, parameter.size() - 2);
-						stringFuncParams.insert(std::pair<size_t, std::string>(index, parameter));
-					}
-					else if (CheckIfNum(parameter)) {
+					if (CheckIfNum(parameter)) {
 						floatFuncParams.insert(std::pair<size_t, float>(index, stof(parameter)));
 					}
 					else if (floatVariables.find(parameter) != floatVariables.end()) {
@@ -579,6 +597,9 @@ size_t VirtualMachine::Call(std::string params, size_t row) {
 					else if (stringVariables.find(parameter) != stringVariables.end()) {
 						std::map<std::string, std::string>::iterator stringIt = stringVariables.find(parameter);
 						stringFuncParams.insert(std::pair<size_t, std::string>(index, stringIt->second));
+					}
+					else{
+						stringFuncParams.insert(std::pair<size_t, std::string>(index, parameter));
 					}
 					++index;
 				}
@@ -596,6 +617,29 @@ size_t VirtualMachine::Call(std::string params, size_t row) {
 	//Review that
 	else if (externalFunctions.find(funcName) != externalFunctions.end()) {
 		externalFunctions.find(funcName)->second();
+		return 0;
+	}
+	else if (externalFunctionsString.find(funcName) != externalFunctionsString.end()) {
+		std::vector<std::string> parameters = ReadParams(params);
+		externalFunctionsString.find(funcName)->second(parameters[0]);
+		return 0;
+	}
+	else if (externalFunctionsFloat.find(funcName) != externalFunctionsFloat.end()) {
+		std::vector<std::string> parameters = ReadParams(params);
+		float firstVal = 0.0, secondVal = 0.0;
+		if (floatVariables.find(parameters[0]) != floatVariables.end()) {
+			firstVal = floatVariables.find(parameters[0])->second;
+		}
+		else if(CheckIfNum(parameters[0])){
+			firstVal = std::stof(parameters[0]);
+		}
+		if (floatVariables.find(parameters[1]) != floatVariables.end()) {
+			secondVal = floatVariables.find(parameters[1])->second;
+		}
+		else if (CheckIfNum(parameters[1])) {
+			secondVal = std::stof(parameters[1]);
+		}
+		externalFunctionsFloat.find(funcName)->second(firstVal, secondVal);
 		return 0;
 	}
 	else {

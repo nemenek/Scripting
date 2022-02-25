@@ -1,10 +1,17 @@
 func Asd (e,g)
-create h 0
-h = e * g
+print e
+print "\n"
+print g
+print "\n"
 delete e
 delete g
-return h
 
 start
-call writeIt()
+create i 2.2
+create b 1.12
+call Asd(12.2, "asdasd")
+call writeIt("parameter in script, program external")
+print "\n"
+call addNums(i,b)
+print "\n"
 end
