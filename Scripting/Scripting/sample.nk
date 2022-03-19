@@ -1,17 +1,26 @@
 func Asd (e,g)
-print e
-print "\n"
-print g
-print "\n"
-delete e
+e = e * g
 delete g
+return e
 
 start
-create i 2.2
-create b 1.12
-call Asd(12.2, "asdasd")
+create i 1.5
+create b 2.12
+i = 1*i
+create h 0
+h = call Asd(i, b)
+h = 1*h+1-22/2
+delete e
+print h
+print "\n"
+if h > 3
+print "Greater than 3"
+print "\n"
 call writeIt("parameter in script, program external")
 print "\n"
-call addNums(i,b)
+call addNums(i,h)
 print "\n"
+delete i
+delete b
+delete h
 end
