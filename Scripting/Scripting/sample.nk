@@ -9,7 +9,7 @@ create b 2.12
 i = 1*i
 create h 0
 h = call Asd(i, b)
-h = 1*h+1-22/2
+h = (b*i)+(2 * (3+3))
 delete e
 print h
 print "\n"
