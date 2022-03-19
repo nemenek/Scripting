@@ -142,17 +142,27 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 	if (!mainFuncReached) {
 		std::transform(commandName.begin(), commandName.end(), commandName.begin(), ::toupper);
 		if (commandName == "FUNC") {
-			size_t pos = str.find(' ');
-			std::string funcName = str.substr(0, pos);
-			functions.insert(std::pair<std::string, int>(funcName, row + 1));
+			size_t pos;
+			if (str.find(' ') != std::string::npos) {
+				pos = str.find(' ');
+				std::string funcName = str.substr(0, pos);
+				functions.insert(std::pair<std::string, int>(funcName, row + 1));
+			}
+			else {
+				pos = str.find('(');
+				std::string funcName = str.substr(0, pos);
+				functions.insert(std::pair<std::string, int>(funcName, row + 1));
+			}
 		}
 		return 0;
 	}
 
 	//Check if the first word is not a command but a variable name.
 	//It is checked before command name is transformed to all upper case.
+
+	//Case float:
 	if (floatVariables.find(commandName) != floatVariables.end()) {
-		std::string helper = "";
+		std::string funcParamsHelper = "";
 		if (str[0] == '=') {
 			//Building expression tree
 			expressionTree = Node();
@@ -184,27 +194,27 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 					}
 					if (var.find('-') != std::string::npos && var.length() != 1) {
 						size_t pos = var.find('-');
-						str = var.substr(pos, var.length() - 1) + str;
+						str = var.substr(pos, var.length()) + str;
 						var = var.substr(0, pos);
 					}
 					if (var.find('/') != std::string::npos && var.length() != 1) {
 						size_t pos = var.find('/');
-						str = var.substr(pos, var.length() - 1) + str;
+						str = var.substr(pos, var.length()) + str;
 						var = var.substr(0, pos);
 					}
 					if (var.find('*') != std::string::npos && var.length() != 1) {
 						size_t pos = var.find('*');
-						str = var.substr(pos, var.length() - 1) + str;
+						str = var.substr(pos, var.length()) + str;
 						var = var.substr(0, pos);
 					}
 					if (var.find('(') != std::string::npos && var.length() != 1) {
 						size_t pos = var.find('(');
-						str = var.substr(pos, var.length() - 1) + str;
+						str = var.substr(pos, var.length()) + str;
 						var = var.substr(0, pos);
 					}
 					if (var.find(')') != std::string::npos && var.length() != 1) {
 						size_t pos = var.find(')');
-						str = var.substr(pos, var.length() - 1) + str;
+						str = var.substr(pos, var.length()) + str;
 						var = var.substr(0, pos);
 					}
 					if (var == "") {
@@ -217,7 +227,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 					}
 					else if (var == "call" || var == "CALL") {
 						addExpression(nextExp, new Node(var));
-						helper = str;
+						funcParamsHelper = str;
 						str = "";
 					}
 					else if (CheckIfNum(var)) {
@@ -243,21 +253,23 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 						}
 					}
 					else {
-						throw VirtualMachineException("Expression evaluation error");
+						throw VirtualMachineException("Expression evaluation error. Line:" + row);
 					}
 				}
 			}
 		}
+		else {
+			throw VirtualMachineException("Expression parsing error. Line:" + row);
+		}
 		// Evaluating expression tree
 		std::map<std::string, float>::iterator it = floatVariables.find(commandName);
 		if (expressionTree.getData() == "") {
-			//TODO should only enter this if, if the expressionTree.getLeft()->getData() value is a number or a float variable
 			if (CheckIfNum(expressionTree.getLeft()->getData()) || floatVariables.find(expressionTree.getLeft()->getData()) != floatVariables.end()) {
 				it->second = GetNextFloatValue(expressionTree.getLeft()->getData());
 			}
-			else if (helper != "") {
+			else if (funcParamsHelper != "") {
 				if (returnValue.length() == 0) {
-					return Call(helper, row - 1);
+					return Call(funcParamsHelper, row - 1);
 				}
 				else {
 					it->second = stof(returnValue);
@@ -265,7 +277,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 				}
 			}
 			else {
-				throw VirtualMachineException("Expression evaluation error");
+				throw VirtualMachineException("Expression evaluation error Line:" + row);
 			}
 		}
 		else {
@@ -273,8 +285,39 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		}
 		return 0;
 	}
-
-	;
+	/// Case String
+	else if (stringVariables.find(commandName) != stringVariables.end()) {
+		if (str[0] == '=') {
+			str = str.substr(1, str.length() - 1);
+			str = RemoveSpacesFromBeginning(str);
+			if (str[0] == '"' && str[str.length() - 1] == '"') {
+				str = str.substr(1, str.length() - 2);
+				stringVariables.find(commandName)->second = str;
+			}
+			else if (stringVariables.find(str) != stringVariables.end()) {
+				stringVariables.find(commandName)->second = stringVariables.find(str)->second;
+			}
+			else if (str.find("call") != std::string::npos || str.find("CALL") != std::string::npos || str.find("Call") != std::string::npos) {
+				//TODO call function into string
+				if (returnValue.length() == 0) {
+					str = str.substr(4, str.length() - 1);
+					str = RemoveSpacesFromBeginning(str);
+					return Call(str, row - 1);
+				}
+				else {
+					stringVariables.find(commandName)->second = returnValue;
+					returnValue = "";
+				}
+			}
+			else {
+				throw VirtualMachineException("Expression evaluation error Line:" + row);
+			}
+		}
+		else {
+			throw VirtualMachineException("Expression parsing error. Line:" + row);
+		}
+		return 0;
+	}
 
 	///To all upper case.
 	std::transform(commandName.begin(), commandName.end(), commandName.begin(), ::toupper);
@@ -565,8 +608,6 @@ size_t VirtualMachine::Call(std::string params, size_t row) {
 	size_t pos;
 	std::string varValue;
 	std::string funcName;
-	int asdasd = std::string::npos;
-	int asd = params.find('"');
 	if (params.find(' ') != std::string::npos && (params.find(' ') < params.find('"') || params.find('"') == std::string::npos) && params.find(' ') < params.find('(')) {
 		pos = params.find(" ");
 		funcName = params.substr(0, pos);
@@ -598,7 +639,7 @@ size_t VirtualMachine::Call(std::string params, size_t row) {
 						std::map<std::string, std::string>::iterator stringIt = stringVariables.find(parameter);
 						stringFuncParams.insert(std::pair<size_t, std::string>(index, stringIt->second));
 					}
-					else{
+					else {
 						stringFuncParams.insert(std::pair<size_t, std::string>(index, parameter));
 					}
 					++index;
@@ -630,7 +671,7 @@ size_t VirtualMachine::Call(std::string params, size_t row) {
 		if (floatVariables.find(parameters[0]) != floatVariables.end()) {
 			firstVal = floatVariables.find(parameters[0])->second;
 		}
-		else if(CheckIfNum(parameters[0])){
+		else if (CheckIfNum(parameters[0])) {
 			firstVal = std::stof(parameters[0]);
 		}
 		if (floatVariables.find(parameters[1]) != floatVariables.end()) {
@@ -691,6 +732,7 @@ float VirtualMachine::EvaluateExpression(char operation, Node* first, Node* seco
 		else {
 			left = std::stof(first->getData());
 		}
+		delete(first);
 	}
 	if (right == 0.0f) {
 		it = floatVariables.find(second->getData());
@@ -700,6 +742,7 @@ float VirtualMachine::EvaluateExpression(char operation, Node* first, Node* seco
 		else {
 			right = std::stof(second->getData());
 		}
+		delete(second);
 	}
 	if (operation == '+') {
 		return left + right;
