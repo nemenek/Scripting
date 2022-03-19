@@ -40,16 +40,11 @@ private:
 	size_t Execute(std::string commandName, std::string value, int row, bool mainFuncReached);
 
 	//private functions
-	float GetNextFloatValue(std::string str);
-	std::string GetNextStringValue(std::string str);
-	bool CheckIfNum(std::string str);
-	std::vector<std::string> ReadParams(std::string params);
-	std::string RemoveSpacesFromBeginning(std::string str);
+	//The call command in a function, so it can be easily accessed.
 	size_t Call(std::string params, size_t row);
-	std::string GetFirstVariable(std::string str);
-	void addExpression(Node* parent, Node* child);
-	float EvaluateExpression(char operation, Node* first, Node* second);
-	bool isOperation(std::string str);
+
+	
+	
 
 	std::map <std::string, float> floatVariables; //stores the float variables. The name of the variable is the key. Also stores integer values.
 

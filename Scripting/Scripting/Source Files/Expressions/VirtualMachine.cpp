@@ -1,5 +1,6 @@
 #include "../../Headers/Expressions/VirtualMachine.h"
 #include "../../Headers/Node.h"
+#include "../../Headers/StringHelper.h"
 #include <fstream>
 #include <iostream>
 #include <algorithm>
@@ -172,7 +173,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 			while (str.length() != 0) {
 				nextExp = Node::getNextExpression(&expressionTree);
 				if (str[0] == '(') {
-					addExpression(nextExp, new Node());
+					Node::addExpression(nextExp, new Node());
 					str = str.substr(1, str.length() - 1);
 					str = RemoveSpacesFromBeginning(str);
 				}
@@ -223,15 +224,15 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 					}
 					str = RemoveSpacesFromBeginning(str);
 					if (floatVariables.find(var) != floatVariables.end()) {
-						addExpression(nextExp, new Node(floatVariables.find(var)->first));
+						Node::addExpression(nextExp, new Node(floatVariables.find(var)->first));
 					}
 					else if (var == "call" || var == "CALL") {
-						addExpression(nextExp, new Node(var));
+						Node::addExpression(nextExp, new Node(var));
 						funcParamsHelper = str;
 						str = "";
 					}
 					else if (CheckIfNum(var)) {
-						addExpression(nextExp, new Node(var));
+						Node::addExpression(nextExp, new Node(var));
 					}
 					else if (var == ")") {
 						/*str = str.substr(1, str.length() - 1);*/
@@ -249,7 +250,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 							nextExp->setData(var);
 						}
 						else {
-							addExpression(nextExp, new Node(var));
+							Node::addExpression(nextExp, new Node(var));
 						}
 					}
 					else {
@@ -265,7 +266,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		std::map<std::string, float>::iterator it = floatVariables.find(commandName);
 		if (expressionTree.getData() == "") {
 			if (CheckIfNum(expressionTree.getLeft()->getData()) || floatVariables.find(expressionTree.getLeft()->getData()) != floatVariables.end()) {
-				it->second = GetNextFloatValue(expressionTree.getLeft()->getData());
+				it->second = GetNextFloatValue(expressionTree.getLeft()->getData(), this->floatVariables);
 			}
 			else if (funcParamsHelper != "") {
 				if (returnValue.length() == 0) {
@@ -281,7 +282,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 			}
 		}
 		else {
-			it->second = EvaluateExpression(expressionTree.getData()[0], expressionTree.getLeft(), expressionTree.getRight());
+			it->second = Node::EvaluateExpression(&this->expressionTree, this->floatVariables);
 		}
 		return 0;
 	}
@@ -328,7 +329,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
 		std::map<std::string, float>::iterator it = floatVariables.find(varName);
-		float secondValue = GetNextFloatValue(str);
+		float secondValue = GetNextFloatValue(str, this->floatVariables);
 		it->second = it->second + secondValue;
 	}
 	else if (commandName == "SUBSTRACT") {
@@ -336,7 +337,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
 		std::map<std::string, float>::iterator it = floatVariables.find(varName);
-		float secondValue = GetNextFloatValue(str);
+		float secondValue = GetNextFloatValue(str, this->floatVariables);
 		it->second = it->second - secondValue;
 	}
 	else if (commandName == "MULTIPLY") {
@@ -344,7 +345,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
 		std::map<std::string, float>::iterator it = floatVariables.find(varName);
-		float secondValue = GetNextFloatValue(str);
+		float secondValue = GetNextFloatValue(str, this->floatVariables);
 		it->second = it->second * secondValue;
 	}
 	else if (commandName == "DIVIDE") {
@@ -352,7 +353,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
 		std::map<std::string, float>::iterator it = floatVariables.find(varName);
-		float secondValue = GetNextFloatValue(str);
+		float secondValue = GetNextFloatValue(str, this->floatVariables);
 		it->second = it->second / secondValue;
 	}
 	else if (commandName == "PRINT") {
@@ -366,9 +367,9 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 			}
 		}
 		else {
-			float value = GetNextFloatValue(str);
+			float value = GetNextFloatValue(str, this->floatVariables);
 			if (value == FLT_MIN) {
-				std::string stringValue = GetNextStringValue(str);
+				std::string stringValue = GetNextStringValue(str, this->stringVariables);
 				std::cout << stringValue;
 			}
 			else {
@@ -380,12 +381,12 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		size_t pos = str.find(" ");
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
-		float firstValue = GetNextFloatValue(varName);
+		float firstValue = GetNextFloatValue(varName, this->floatVariables);
 		pos = str.find(" ");
 		std::string l_operator = str.substr(0, pos);
 		str.erase(0, pos + 1);
 		std::string secondVarName = str;
-		float secondValue = GetNextFloatValue(secondVarName);
+		float secondValue = GetNextFloatValue(secondVarName, this->floatVariables);
 		if (l_operator == "=" && secondValue != firstValue) {
 			return -1;
 		}
@@ -515,94 +516,6 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 	return 0;
 }
 
-/// <summary>
-/// Reads the parameters and returns them in a string vector.
-/// </summary>
-/// <param name="params">The parameters in a string format.</param>
-/// <returns>The vector which stores the parameters.</returns>
-std::vector<std::string> VirtualMachine::ReadParams(std::string params) {
-	params = params.substr(1, params.size() - 2); //delete () from the parameter string
-	std::vector<std::string> parameters;
-	size_t pos;
-	std::string varValue;
-	while (params.length() != 0) {
-		params = RemoveSpacesFromBeginning(params);
-		if (params[0] == '"') {
-			params = params.substr(1, params.length() - 1);
-			pos = params.find('"');
-			parameters.push_back(params.substr(0, pos));
-			params = params.substr(pos + 1, params.length() - 1);
-			if (params.find(',') != std::string::npos) {
-				pos = params.find(',');
-				params = params.substr(pos + 1, params.length() - 1);
-			}
-		}
-		else {
-			pos = params.find(',');
-			if (pos == std::string::npos) {
-				parameters.push_back(params);
-				params = "";
-			}
-			else {
-				parameters.push_back(params.substr(0, pos));
-				params = params.substr(pos + 1, params.length() - 1);
-			}
-		}
-	}
-	return parameters;
-}
-
-//Gets the value of the variable stored in the map identified by the varName parameter
-// if there is no such variable it tries to parse it into float value, if it could not,
-// returns with FLT_MIN
-float VirtualMachine::GetNextFloatValue(std::string varName) {
-	std::map<std::string, float>::iterator it = floatVariables.find(varName);
-	if (it == floatVariables.end()) {
-		if (CheckIfNum(varName)) {
-			return std::stof(varName);
-		}
-		return FLT_MIN;
-	}
-	return it->second;
-}
-
-/// <summary>
-/// It gets the value identified by the varName parameter. If there is not such variable,
-/// it returns with an empty string.
-/// </summary>
-/// <param name="varName">The name of the variable.</param>
-/// <returns>The value of the variable. Empty string if there is no such variable.</returns>
-std::string VirtualMachine::GetNextStringValue(std::string varName) {
-	std::map<std::string, std::string>::iterator it = stringVariables.find(varName);
-	if (it == stringVariables.end()) {
-		//throw VirtualMachineException("Variable is not declared.");
-		return "";
-	}
-	return it->second;
-}
-
-//Returns true if the given parameter "str" is a number (can be float (1.0) number too), returns false otherwise.
-bool VirtualMachine::CheckIfNum(std::string str) {
-	for (char c : str) {
-		if (std::isdigit(c) == 0 && c != '.') {
-			return false;
-		}
-	}
-	return true;
-}
-
-/// <summary>
-/// Well it removes the spaces from the beginning of the given string.
-/// </summary>
-/// <param name="str">The string to be trimmed.</param>
-/// <returns>The str without the spaces.</returns>
-std::string VirtualMachine::RemoveSpacesFromBeginning(std::string str) {
-	while (str.find(' ') == 0) { //deleting plus spaces from the beginning of the variable value
-		str = str.substr(1, str.size() - 1);
-	}
-	return str;
-}
-
 //Call command inside functions so it can be called by other functions/commands
 size_t VirtualMachine::Call(std::string params, size_t row) {
 	size_t pos;
@@ -688,80 +601,5 @@ size_t VirtualMachine::Call(std::string params, size_t row) {
 	}
 }
 
-/// <summary>
-/// Returns the string lasting to the first ' ' character. If no space is present
-/// it returns the whole string.
-/// </summary>
-/// <param name="str">The string to be checked.</param>
-/// <returns>
-/// The string value from the first character to the first space
-/// or the end of the string if no space is present.
-/// </returns>
-std::string VirtualMachine::GetFirstVariable(std::string str) {
-	size_t spacePos = str.find(' ');
-	if (spacePos != std::string::npos) {
-		str = str.substr(0, spacePos);
-	}
-	return str;
-}
 
-void VirtualMachine::addExpression(Node* parent, Node* child) {
-	if (parent->getLeft() == nullptr) {
-		parent->addLeft(child);
-	}
-	else {
-		parent->addRight(child);
-	}
-}
 
-float VirtualMachine::EvaluateExpression(char operation, Node* first, Node* second) {
-	float left = 0.0f;
-	float right = 0.0f;
-	if (isOperation(first->getData())) {
-		left = EvaluateExpression(first->getData()[0], first->getLeft(), first->getRight());
-	}
-	if (isOperation(second->getData())) {
-		right = EvaluateExpression(second->getData()[0], second->getLeft(), second->getRight());
-	}
-	std::map<std::string, float>::iterator it;
-	if (left == 0.0f) {
-		it = floatVariables.find(first->getData());
-		if (it != floatVariables.end()) {
-			left = it->second;
-		}
-		else {
-			left = std::stof(first->getData());
-		}
-		delete(first);
-	}
-	if (right == 0.0f) {
-		it = floatVariables.find(second->getData());
-		if (it != floatVariables.end()) {
-			right = it->second;
-		}
-		else {
-			right = std::stof(second->getData());
-		}
-		delete(second);
-	}
-	if (operation == '+') {
-		return left + right;
-	}
-	else if (operation == '-') {
-		return left - right;
-	}
-	else if (operation == '/') {
-		return left / right;
-	}
-	else if (operation == '*') {
-		return left * right;
-	}
-}
-
-bool VirtualMachine::isOperation(std::string str) {
-	if (str.length() != 1 || (str.find('+') == std::string::npos && str.find('-') == std::string::npos
-		&& str.find('*') == std::string::npos && str.find('/') == std::string::npos)) {
-		return false;
-	}
-	return true;
-}

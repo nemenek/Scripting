@@ -24,12 +24,18 @@
     <ClCompile Include="Source Files\Node.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source Files\StringHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Expressions\VirtualMachine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\StringHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
