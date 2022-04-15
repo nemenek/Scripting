@@ -163,17 +163,26 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 
 	//Case float:
 	if (floatVariables.find(commandName) != floatVariables.end()) {
+		//If it stays empty, there is no function call, it contains the function name and params otherwise
 		std::string funcParamsHelper = "";
+		//It is evaluateable only if there is '=' at the begining of the expression.
 		if (str[0] == '=') {
 			//Building expression tree
+
+			//Root node
 			expressionTree = Node();
+			//Removing '=' from the begining.
 			str = str.substr(1, str.length() - 1);
 			str = RemoveSpacesFromBeginning(str);
+			//The next node to be determined
 			Node* nextExp;
 			while (str.length() != 0) {
+				//Initializing an empty node
 				nextExp = Node::getNextExpression(&expressionTree);
+				//If it is a '(' it adds a new empty node.
 				if (str[0] == '(') {
 					Node::addExpression(nextExp, new Node());
+					//Remove '(' from begining
 					str = str.substr(1, str.length() - 1);
 					str = RemoveSpacesFromBeginning(str);
 				}
@@ -226,9 +235,14 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 					if (floatVariables.find(var) != floatVariables.end()) {
 						Node::addExpression(nextExp, new Node(floatVariables.find(var)->first));
 					}
-					else if (var == "call" || var == "CALL") {
+					else if (var == "CALL" || var == "call") {
 						Node::addExpression(nextExp, new Node(var));
 						funcParamsHelper = str;
+						str = "";
+					}
+					else if (functions.find(var) != functions.end()) {
+						Node::addExpression(nextExp, new Node(var));
+						funcParamsHelper = var + str;
 						str = "";
 					}
 					else if (CheckIfNum(var)) {
@@ -268,10 +282,13 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 			if (CheckIfNum(expressionTree.getLeft()->getData()) || floatVariables.find(expressionTree.getLeft()->getData()) != floatVariables.end()) {
 				it->second = GetNextFloatValue(expressionTree.getLeft()->getData(), this->floatVariables);
 			}
+			//If it is a function call
 			else if (funcParamsHelper != "") {
+				//if it has not been evaluated
 				if (returnValue.length() == 0) {
 					return Call(funcParamsHelper, row - 1);
 				}
+				//else save return value of function
 				else {
 					it->second = stof(returnValue);
 					returnValue = "";
@@ -299,7 +316,6 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 				stringVariables.find(commandName)->second = stringVariables.find(str)->second;
 			}
 			else if (str.find("call") != std::string::npos || str.find("CALL") != std::string::npos || str.find("Call") != std::string::npos) {
-				//TODO call function into string
 				if (returnValue.length() == 0) {
 					str = str.substr(4, str.length() - 1);
 					str = RemoveSpacesFromBeginning(str);
@@ -319,6 +335,24 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		}
 		return 0;
 	}
+	//Case function call
+	else {
+		// it could be called like funcion(params) or function (params)
+		size_t pos = commandName.find('(');
+		if (pos != std::string::npos) {
+			std::string tmpStr = commandName.substr(0, pos);
+			if (functions.find(tmpStr) != functions.end()) {
+				return Call(commandName, row);
+			}
+		}
+		else {
+			if (functions.find(commandName) != functions.end()) {
+				return Call(commandName + str, row);
+			}
+		}
+	}
+
+
 
 	///To all upper case.
 	std::transform(commandName.begin(), commandName.end(), commandName.begin(), ::toupper);

@@ -3,24 +3,21 @@ e = e * g
 delete g
 return e
 
-start
-create i 1.5
-create b 2.12
-i = 1*i
-create h 0
-h = call Asd(i, b)
-h = (b*i)+(2 * (3+3))
+func Display(e)
+print e
 delete e
-print h
+
+start
+create a 2
+create b 4
+create c 0
+c = Asd(a,b)
+delete e
+print c
 print "\n"
-if h > 3
-print "Greater than 3"
+Display ("asd")
 print "\n"
-call writeIt("parameter in script, program external")
-print "\n"
-call addNums(i,h)
-print "\n"
-delete i
+delete a
 delete b
-delete h
+delete c
 end

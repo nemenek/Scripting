@@ -1,4 +1,5 @@
 #include "../Headers/Node.h"
+#include "../Headers/StringHelper.h"
 
 Node::Node(std::string data) : data(data) {
 	this->left = nullptr;
@@ -75,14 +76,12 @@ void Node::addExpression(Node* parent, Node* child) {
 /// <summary>
 /// Evaluates the expression tree.
 /// </summary>
-/// <param name="operation">The root node's operation. (Root node MUST be an operation)</param>
-/// <param name="first">The left child of the root node.</param>
-/// <param name="second">The right child of the root node.</param>
-/// <param name="floatVars"></param>
-/// <returns></returns>
+/// <param name="node">The root node.</param>
+/// <param name="floatVars">The predefined float variables.</param>
+/// <returns>The result of the expression tree.</returns>
 float Node::EvaluateExpression(Node* node, std::map<std::string, float> floatVars) {
-	float left = 0.0f;
-	float right = 0.0f;
+	float left = FLT_MAX;
+	float right = FLT_MAX;
 	if (isOperation(node->getLeft()->getData())) {
 		left = EvaluateExpression(node->getLeft(), floatVars);
 	}
@@ -90,24 +89,12 @@ float Node::EvaluateExpression(Node* node, std::map<std::string, float> floatVar
 		right = EvaluateExpression(node->getRight(), floatVars);
 	}
 	std::map<std::string, float>::iterator it;
-	if (left == 0.0f) {
-		it = floatVars.find(node->getLeft()->getData());
-		if (it != floatVars.end()) {
-			left = it->second;
-		}
-		else {
-			left = std::stof(node->getLeft()->getData());
-		}
+	if (left == FLT_MAX) {
+		left = GetNextFloatValue(node->getLeft()->getData(), floatVars);
 		delete(node->getLeft());
 	}
-	if (right == 0.0f) {
-		it = floatVars.find(node->getRight()->getData());
-		if (it != floatVars.end()) {
-			right = it->second;
-		}
-		else {
-			right = std::stof(node->getRight()->getData());
-		}
+	if (right == FLT_MAX) {
+		right = GetNextFloatValue(node->getRight()->getData(), floatVars);
 		delete(node->getRight());
 	}
 	if (node->getData()[0] == '+') {
