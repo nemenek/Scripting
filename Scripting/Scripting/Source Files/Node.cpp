@@ -79,22 +79,22 @@ void Node::addExpression(Node* parent, Node* child) {
 /// <param name="node">The root node.</param>
 /// <param name="floatVars">The predefined float variables.</param>
 /// <returns>The result of the expression tree.</returns>
-float Node::EvaluateExpression(Node* node, std::map<std::string, float> floatVars) {
+float Node::evaluateExpression(Node* node, std::map<std::string, float> floatVars) {
 	float left = FLT_MAX;
 	float right = FLT_MAX;
 	if (isOperation(node->getLeft()->getData())) {
-		left = EvaluateExpression(node->getLeft(), floatVars);
+		left = evaluateExpression(node->getLeft(), floatVars);
 	}
 	if (isOperation(node->getRight()->getData())) {
-		right = EvaluateExpression(node->getRight(), floatVars);
+		right = evaluateExpression(node->getRight(), floatVars);
 	}
 	std::map<std::string, float>::iterator it;
 	if (left == FLT_MAX) {
-		left = GetNextFloatValue(node->getLeft()->getData(), floatVars);
+		left = getNextFloatValue(node->getLeft()->getData(), floatVars);
 		delete(node->getLeft());
 	}
 	if (right == FLT_MAX) {
-		right = GetNextFloatValue(node->getRight()->getData(), floatVars);
+		right = getNextFloatValue(node->getRight()->getData(), floatVars);
 		delete(node->getRight());
 	}
 	if (node->getData()[0] == '+') {

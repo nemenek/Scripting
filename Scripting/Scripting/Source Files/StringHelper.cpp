@@ -6,7 +6,7 @@
 /// </summary>
 /// <param name="varName">The name of the variable.</param>
 /// <returns>The value of the variable. Empty string if there is no such variable.</returns>
-std::string GetNextStringValue(std::string varName, std::map<std::string, std::string> stringVars) {
+std::string getNextStringValue(std::string varName, std::map<std::string, std::string> stringVars) {
 	std::map<std::string, std::string>::iterator it = stringVars.find(varName);
 	if (it == stringVars.end()) {
 		//throw VirtualMachineException("Variable is not declared.");
@@ -16,7 +16,7 @@ std::string GetNextStringValue(std::string varName, std::map<std::string, std::s
 }
 
 //Returns true if the given parameter "str" is a number (can be float (1.0) number too), returns false otherwise.
-bool CheckIfNum(std::string str) {
+bool checkIfNum(std::string str) {
 	for (char c : str) {
 		if (std::isdigit(c) == 0 && c != '.') {
 			return false;
@@ -30,13 +30,13 @@ bool CheckIfNum(std::string str) {
 /// </summary>
 /// <param name="params">The parameters in a string format.</param>
 /// <returns>The vector which stores the parameters.</returns>
-std::vector<std::string> ReadParams(std::string params) {
+std::vector<std::string> readParams(std::string params) {
 	params = params.substr(1, params.size() - 2); //delete () from the parameter string
 	std::vector<std::string> parameters;
 	size_t pos;
 	std::string varValue;
 	while (params.length() != 0) {
-		params = RemoveSpacesFromBeginning(params);
+		params = removeSpacesFromBeginning(params);
 		if (params[0] == '"') {
 			params = params.substr(1, params.length() - 1);
 			pos = params.find('"');
@@ -67,7 +67,7 @@ std::vector<std::string> ReadParams(std::string params) {
 /// </summary>
 /// <param name="str">The string to be trimmed.</param>
 /// <returns>The str without the spaces.</returns>
-std::string RemoveSpacesFromBeginning(std::string str) {
+std::string removeSpacesFromBeginning(std::string str) {
 	while (str.find(' ') == 0) { //deleting plus spaces from the beginning of the variable value
 		str = str.substr(1, str.size() - 1);
 	}
@@ -77,10 +77,10 @@ std::string RemoveSpacesFromBeginning(std::string str) {
 //Gets the value of the variable stored in the map identified by the varName parameter
 // if there is no such variable it tries to parse it into float value, if it could not,
 // returns with FLT_MIN
-float GetNextFloatValue(std::string varName, std::map<std::string, float> floatVars) {
+float getNextFloatValue(std::string varName, std::map<std::string, float> floatVars) {
 	std::map<std::string, float>::iterator it = floatVars.find(varName);
 	if (it == floatVars.end()) {
-		if (CheckIfNum(varName)) {
+		if (checkIfNum(varName)) {
 			return std::stof(varName);
 		}
 		return FLT_MIN;
@@ -97,7 +97,7 @@ float GetNextFloatValue(std::string varName, std::map<std::string, float> floatV
 /// The string value from the first character to the first space
 /// or the end of the string if no space is present.
 /// </returns>
-std::string GetFirstVariable(std::string str) {
+std::string getFirstVariable(std::string str) {
 	size_t spacePos = str.find(' ');
 	if (spacePos != std::string::npos) {
 		str = str.substr(0, spacePos);

@@ -21,27 +21,27 @@ public:
 	/// Executes the given script. Every new line should be separated by '\n'.
 	/// </summary>
 	/// <param name="script">The scipt in string.</param>
-	void ExecuteFromScript(std::string script);
+	void executeFromScript(std::string script);
 
 	/// <summary>
 	/// Executes the code in the given file.
 	/// </summary>
 	/// <param name="path">The path to the file.</param>
-	void ExecuteFromFile(std::string path);
+	void executeFromFile(std::string path);
 
 
-	void AddExternalFunction(std::string name, void (*funcPointer)(void));
+	void addExternalFunction(std::string name, void (*funcPointer)(void));
 
-	void AddExternalFunction(std::string name, void (*funcPointer)(std::string));
+	void addExternalFunction(std::string name, void (*funcPointer)(std::string));
 
-	void AddExternalFunction(std::string name, void (*funcPointer)(float, float));
+	void addExternalFunction(std::string name, void (*funcPointer)(float, float));
 
 private:
-	size_t Execute(std::string commandName, std::string value, int row, bool mainFuncReached);
+	size_t execute(std::string commandName, std::string value, int row, bool mainFuncReached);
 
 	//private functions
 	//The call command in a function, so it can be easily accessed.
-	size_t Call(std::string params, size_t row);
+	size_t call(std::string params, size_t row);
 
 	
 	

@@ -6,11 +6,11 @@ int main() {
 	void addNums(float first, float second);
 
 	VirtualMachine vm;
-	vm.AddExternalFunction("writeIt", writeIt);
-	vm.AddExternalFunction("addNums", addNums);
+	vm.addExternalFunction("writeIt", writeIt);
+	vm.addExternalFunction("addNums", addNums);
 	try {
-		vm.ExecuteFromFile("sample.nk");
-		//vm.ExecuteFromScript("START\nCREATE i 5\nprint i\nEND");
+		vm.executeFromFile("sample.nk");
+		//vm.executeFromScript("START\nCREATE i 5\nprint i\nEND");
 	}
 	catch (VirtualMachineException e) {
 		std::cout << e.what() << std::endl;

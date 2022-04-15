@@ -14,22 +14,22 @@ std::string VirtualMachineException::what() {
 VirtualMachine::VirtualMachine() {}
 
 //TODO: add external func call to call command
-void VirtualMachine::AddExternalFunction(std::string name, void (*funcPointer)(void)) {
+void VirtualMachine::addExternalFunction(std::string name, void (*funcPointer)(void)) {
 	//functions.insert(std::pair<std::string, int>(name, -1));
 	externalFunctions.insert(std::pair < std::string, void(*)()>(name, funcPointer));
 }
 
-void VirtualMachine::AddExternalFunction(std::string name, void (*funcPointer)(std::string)) {
+void VirtualMachine::addExternalFunction(std::string name, void (*funcPointer)(std::string)) {
 	//functions.insert(std::pair<std::string, int>(name, -1));
 	externalFunctionsString.insert(std::pair < std::string, void(*)(std::string)>(name, funcPointer));
 }
 
-void VirtualMachine::AddExternalFunction(std::string name, void (*funcPointer)(float, float)) {
+void VirtualMachine::addExternalFunction(std::string name, void (*funcPointer)(float, float)) {
 	//functions.insert(std::pair<std::string, int>(name, -1));
 	externalFunctionsFloat.insert(std::pair < std::string, void(*)(float, float)>(name, funcPointer));
 }
 
-void VirtualMachine::ExecuteFromScript(std::string script) {
+void VirtualMachine::executeFromScript(std::string script) {
 	std::vector<std::string> lines;
 	std::string tempString = "";
 	for (char item : script) {
@@ -68,7 +68,7 @@ void VirtualMachine::ExecuteFromScript(std::string script) {
 		commandName = tempString.substr(0, pos); //getting the values from the line
 		tempString.erase(0, pos + 1);
 
-		jumpTo = Execute(commandName, tempString, i, mainFuncReached); //jumps in script line accordint to return value
+		jumpTo = execute(commandName, tempString, i, mainFuncReached); //jumps in script line accordint to return value
 		if (jumpTo != 0) {
 			if (jumpTo > 0) {
 				i = jumpTo - 2;
@@ -80,7 +80,7 @@ void VirtualMachine::ExecuteFromScript(std::string script) {
 	}
 }
 
-void VirtualMachine::ExecuteFromFile(std::string path) {
+void VirtualMachine::executeFromFile(std::string path) {
 
 	std::ifstream newFile;
 	std::string text;
@@ -119,7 +119,7 @@ void VirtualMachine::ExecuteFromFile(std::string path) {
 		pos = tempString.find(" ");
 		commandName = tempString.substr(0, pos);
 		tempString.erase(0, pos + 1);
-		jumpTo = Execute(commandName, tempString, i, mainFuncReached);
+		jumpTo = execute(commandName, tempString, i, mainFuncReached);
 		if (jumpTo != 0) {
 			if (jumpTo > 0) {
 				i = jumpTo - 2;
@@ -138,7 +138,7 @@ void VirtualMachine::ExecuteFromFile(std::string path) {
 /// <param name="str">The command parameters. even with more parameters it should be one string, all the parameters seperated with space.</param>
 /// <param name="row">The index of the row which is being executed.</param>
 /// <returns>Greater than zero, if the program should jump to a specific row in the program. Less than zero if the program should skip a specific number of rows (-2 skips two rows(right now it only uses -1 as return value less than 0)). 0 if the program execution should follow in order.</returns>
-size_t VirtualMachine::Execute(std::string commandName, std::string str, int row, bool mainFuncReached) {
+size_t VirtualMachine::execute(std::string commandName, std::string str, int row, bool mainFuncReached) {
 	//function defining
 	if (!mainFuncReached) {
 		std::transform(commandName.begin(), commandName.end(), commandName.begin(), ::toupper);
@@ -173,7 +173,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 			expressionTree = Node();
 			//Removing '=' from the begining.
 			str = str.substr(1, str.length() - 1);
-			str = RemoveSpacesFromBeginning(str);
+			str = removeSpacesFromBeginning(str);
 			//The next node to be determined
 			Node* nextExp;
 			while (str.length() != 0) {
@@ -184,7 +184,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 					Node::addExpression(nextExp, new Node());
 					//Remove '(' from begining
 					str = str.substr(1, str.length() - 1);
-					str = RemoveSpacesFromBeginning(str);
+					str = removeSpacesFromBeginning(str);
 				}
 				else {
 					size_t pos = str.find(' ');
@@ -231,7 +231,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 						var = str[0];
 						str = str.substr(1, str.length() - 1);
 					}
-					str = RemoveSpacesFromBeginning(str);
+					str = removeSpacesFromBeginning(str);
 					if (floatVariables.find(var) != floatVariables.end()) {
 						Node::addExpression(nextExp, new Node(floatVariables.find(var)->first));
 					}
@@ -245,7 +245,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 						funcParamsHelper = var + str;
 						str = "";
 					}
-					else if (CheckIfNum(var)) {
+					else if (checkIfNum(var)) {
 						Node::addExpression(nextExp, new Node(var));
 					}
 					else if (var == ")") {
@@ -279,14 +279,14 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		// Evaluating expression tree
 		std::map<std::string, float>::iterator it = floatVariables.find(commandName);
 		if (expressionTree.getData() == "") {
-			if (CheckIfNum(expressionTree.getLeft()->getData()) || floatVariables.find(expressionTree.getLeft()->getData()) != floatVariables.end()) {
-				it->second = GetNextFloatValue(expressionTree.getLeft()->getData(), this->floatVariables);
+			if (checkIfNum(expressionTree.getLeft()->getData()) || floatVariables.find(expressionTree.getLeft()->getData()) != floatVariables.end()) {
+				it->second = getNextFloatValue(expressionTree.getLeft()->getData(), this->floatVariables);
 			}
 			//If it is a function call
 			else if (funcParamsHelper != "") {
 				//if it has not been evaluated
 				if (returnValue.length() == 0) {
-					return Call(funcParamsHelper, row - 1);
+					return call(funcParamsHelper, row - 1);
 				}
 				//else save return value of function
 				else {
@@ -299,7 +299,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 			}
 		}
 		else {
-			it->second = Node::EvaluateExpression(&this->expressionTree, this->floatVariables);
+			it->second = Node::evaluateExpression(&this->expressionTree, this->floatVariables);
 		}
 		return 0;
 	}
@@ -307,7 +307,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 	else if (stringVariables.find(commandName) != stringVariables.end()) {
 		if (str[0] == '=') {
 			str = str.substr(1, str.length() - 1);
-			str = RemoveSpacesFromBeginning(str);
+			str = removeSpacesFromBeginning(str);
 			if (str[0] == '"' && str[str.length() - 1] == '"') {
 				str = str.substr(1, str.length() - 2);
 				stringVariables.find(commandName)->second = str;
@@ -318,8 +318,8 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 			else if (str.find("call") != std::string::npos || str.find("CALL") != std::string::npos || str.find("Call") != std::string::npos) {
 				if (returnValue.length() == 0) {
 					str = str.substr(4, str.length() - 1);
-					str = RemoveSpacesFromBeginning(str);
-					return Call(str, row - 1);
+					str = removeSpacesFromBeginning(str);
+					return call(str, row - 1);
 				}
 				else {
 					stringVariables.find(commandName)->second = returnValue;
@@ -342,12 +342,12 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		if (pos != std::string::npos) {
 			std::string tmpStr = commandName.substr(0, pos);
 			if (functions.find(tmpStr) != functions.end()) {
-				return Call(commandName, row);
+				return call(commandName, row);
 			}
 		}
 		else {
 			if (functions.find(commandName) != functions.end()) {
-				return Call(commandName + str, row);
+				return call(commandName + str, row);
 			}
 		}
 	}
@@ -363,7 +363,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
 		std::map<std::string, float>::iterator it = floatVariables.find(varName);
-		float secondValue = GetNextFloatValue(str, this->floatVariables);
+		float secondValue = getNextFloatValue(str, this->floatVariables);
 		it->second = it->second + secondValue;
 	}
 	else if (commandName == "SUBSTRACT") {
@@ -371,7 +371,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
 		std::map<std::string, float>::iterator it = floatVariables.find(varName);
-		float secondValue = GetNextFloatValue(str, this->floatVariables);
+		float secondValue = getNextFloatValue(str, this->floatVariables);
 		it->second = it->second - secondValue;
 	}
 	else if (commandName == "MULTIPLY") {
@@ -379,7 +379,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
 		std::map<std::string, float>::iterator it = floatVariables.find(varName);
-		float secondValue = GetNextFloatValue(str, this->floatVariables);
+		float secondValue = getNextFloatValue(str, this->floatVariables);
 		it->second = it->second * secondValue;
 	}
 	else if (commandName == "DIVIDE") {
@@ -387,7 +387,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
 		std::map<std::string, float>::iterator it = floatVariables.find(varName);
-		float secondValue = GetNextFloatValue(str, this->floatVariables);
+		float secondValue = getNextFloatValue(str, this->floatVariables);
 		it->second = it->second / secondValue;
 	}
 	else if (commandName == "PRINT") {
@@ -401,9 +401,9 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 			}
 		}
 		else {
-			float value = GetNextFloatValue(str, this->floatVariables);
+			float value = getNextFloatValue(str, this->floatVariables);
 			if (value == FLT_MIN) {
-				std::string stringValue = GetNextStringValue(str, this->stringVariables);
+				std::string stringValue = getNextStringValue(str, this->stringVariables);
 				std::cout << stringValue;
 			}
 			else {
@@ -415,12 +415,12 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		size_t pos = str.find(" ");
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
-		float firstValue = GetNextFloatValue(varName, this->floatVariables);
+		float firstValue = getNextFloatValue(varName, this->floatVariables);
 		pos = str.find(" ");
 		std::string l_operator = str.substr(0, pos);
 		str.erase(0, pos + 1);
 		std::string secondVarName = str;
-		float secondValue = GetNextFloatValue(secondVarName, this->floatVariables);
+		float secondValue = getNextFloatValue(secondVarName, this->floatVariables);
 		if (l_operator == "=" && secondValue != firstValue) {
 			return -1;
 		}
@@ -445,7 +445,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		str.erase(0, pos + 1);
 		std::map<std::string, float>::iterator it = floatVariables.find(str);
 		std::map<std::string, std::string>::iterator strIt = stringVariables.find(str);
-		if (CheckIfNum(str)) {
+		if (checkIfNum(str)) {
 			float varValue = std::stof(str);
 			floatVariables.insert(std::pair<std::string, float>(varName, varValue));
 		}
@@ -478,7 +478,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		}
 	}
 	else if (commandName == "CALL") {
-		return Call(str, row);
+		return call(str, row);
 
 	}
 	else if (commandName == "FUNC") {
@@ -494,7 +494,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		}
 		if (str.length() >= 2 && str[0] == '(' && str[str.size() - 1] == ')') {
 			if (str.size() != 0) {
-				std::vector<std::string> parameters = ReadParams(str); //loading the parameters to a vector
+				std::vector<std::string> parameters = readParams(str); //loading the parameters to a vector
 
 				size_t index = 0;
 
@@ -522,7 +522,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 		if (str[0] == '"' && str[str.size() - 1] == '"') {
 			returnValue = str.substr(1, str.size() - 2);
 		}
-		else if (CheckIfNum(str)) {
+		else if (checkIfNum(str)) {
 			returnValue = str;
 		}
 		else if (floatVariables.find(str) != floatVariables.end()) {
@@ -551,7 +551,7 @@ size_t VirtualMachine::Execute(std::string commandName, std::string str, int row
 }
 
 //Call command inside functions so it can be called by other functions/commands
-size_t VirtualMachine::Call(std::string params, size_t row) {
+size_t VirtualMachine::call(std::string params, size_t row) {
 	size_t pos;
 	std::string varValue;
 	std::string funcName;
@@ -570,12 +570,12 @@ size_t VirtualMachine::Call(std::string params, size_t row) {
 		if (params.length() >= 2 && params[0] == '(' && params[params.size() - 1] == ')') {
 
 			if (params.size() != 0) {
-				std::vector<std::string> parameters = ReadParams(params); //loading the parameters to a vector
+				std::vector<std::string> parameters = readParams(params); //loading the parameters to a vector
 
 				//load the parameters to floatFuncParams and stringFuncParams vectors
 				size_t index = 0;
 				for (std::string parameter : parameters) {
-					if (CheckIfNum(parameter)) {
+					if (checkIfNum(parameter)) {
 						floatFuncParams.insert(std::pair<size_t, float>(index, stof(parameter)));
 					}
 					else if (floatVariables.find(parameter) != floatVariables.end()) {
@@ -608,23 +608,23 @@ size_t VirtualMachine::Call(std::string params, size_t row) {
 		return 0;
 	}
 	else if (externalFunctionsString.find(funcName) != externalFunctionsString.end()) {
-		std::vector<std::string> parameters = ReadParams(params);
+		std::vector<std::string> parameters = readParams(params);
 		externalFunctionsString.find(funcName)->second(parameters[0]);
 		return 0;
 	}
 	else if (externalFunctionsFloat.find(funcName) != externalFunctionsFloat.end()) {
-		std::vector<std::string> parameters = ReadParams(params);
+		std::vector<std::string> parameters = readParams(params);
 		float firstVal = 0.0, secondVal = 0.0;
 		if (floatVariables.find(parameters[0]) != floatVariables.end()) {
 			firstVal = floatVariables.find(parameters[0])->second;
 		}
-		else if (CheckIfNum(parameters[0])) {
+		else if (checkIfNum(parameters[0])) {
 			firstVal = std::stof(parameters[0]);
 		}
 		if (floatVariables.find(parameters[1]) != floatVariables.end()) {
 			secondVal = floatVariables.find(parameters[1])->second;
 		}
-		else if (CheckIfNum(parameters[1])) {
+		else if (checkIfNum(parameters[1])) {
 			secondVal = std::stof(parameters[1]);
 		}
 		externalFunctionsFloat.find(funcName)->second(firstVal, secondVal);
