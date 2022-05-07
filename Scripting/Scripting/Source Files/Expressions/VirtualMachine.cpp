@@ -11,7 +11,7 @@ std::string VirtualMachineException::what() {
 	return message;
 }
 
-VirtualMachine::VirtualMachine() {}
+VirtualMachine::VirtualMachine() : depth(0) {}
 
 //TODO: add external func call to call command
 void VirtualMachine::addExternalFunction(std::string name, void (*funcPointer)(void)) {
@@ -155,6 +155,23 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 				functions.insert(std::pair<std::string, int>(funcName, row + 1));
 			}
 		}
+		return 0;
+	}
+
+	//Check "if" depth
+	if (depth > 0) {
+		size_t idx = 0;
+		while (idx < this->depth) {
+			if (commandName.length() < this->depth || commandName[0] != '\t') {
+				--depth;
+			}
+			else {
+				commandName = commandName.substr(1, commandName.length());
+				++idx;
+			}
+		}
+	}
+	if (commandName[0] == '\t') {
 		return 0;
 	}
 
@@ -412,26 +429,116 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 		}
 	}
 	else if (commandName == "IF") {
-		size_t pos = str.find(" ");
-		std::string varName = str.substr(0, pos);
-		str.erase(0, pos + 1);
-		float firstValue = getNextFloatValue(varName, this->floatVariables);
-		pos = str.find(" ");
-		std::string l_operator = str.substr(0, pos);
-		str.erase(0, pos + 1);
-		std::string secondVarName = str;
-		float secondValue = getNextFloatValue(secondVarName, this->floatVariables);
-		if (l_operator == "=" && secondValue != firstValue) {
-			return -1;
+		size_t pos = str.find("(");
+		str = str.substr(pos + 1, str.length());
+		if (str[str.length() - 1] != ')') {
+			throw VirtualMachineException("Invalid if expression format.");
 		}
-		else if (l_operator == "<" && firstValue >= secondValue) {
-			return -1;
+		str = str.substr(0, str.length() - 1);
+		
+		if (str == "true") {
+			++this->depth;
+			return 0;
 		}
-		else if (l_operator == ">" && firstValue <= secondValue) {
-			return -1;
+		else if (str == "false") {
+			return 0;
 		}
-		else if (l_operator == "!=" && firstValue == secondValue) {
-			return -1;
+
+		float firstVal = FLT_MIN;
+		float secondVal = FLT_MIN;
+		char operation;
+
+		while (str.length() != 0) {
+			str = removeSpacesFromBeginning(str);
+			pos = str.find(' ');
+			std::string var;
+			if (pos != std::string::npos) {
+				var = str.substr(0, pos);
+				str = str.substr(pos, str.length() - 1);
+			}
+			else {
+				var = str;
+				str = "";
+			}
+			if (var.find('=') != std::string::npos && var.length() != 1) {
+				size_t pos = var.find('=');
+				str = var.substr(pos, var.length()) + str;
+				var = var.substr(0, pos);
+			}
+			if (var.find('>') != std::string::npos && var.length() != 1) {
+				size_t pos = var.find('>');
+				str = var.substr(pos, var.length()) + str;
+				var = var.substr(0, pos);
+			}
+			if (var.find('<') != std::string::npos && var.length() != 1) {
+				size_t pos = var.find('<');
+				str = var.substr(pos, var.length()) + str;
+				var = var.substr(0, pos);
+			}
+			/*if (var.find('|') != std::string::npos && var.length() != 1) {
+				size_t pos = var.find('|');
+				str = var.substr(pos, var.length()) + str;
+				var = var.substr(0, pos);
+			}
+			if (var.find('&') != std::string::npos && var.length() != 1) {
+				size_t pos = var.find('&');
+				str = var.substr(pos, var.length()) + str;
+				var = var.substr(0, pos);
+			}*/
+			if (var == "") {
+				var = str[0];
+				str = str.substr(1, str.length() - 1);
+			}
+			
+			if (floatVariables.find(var) != floatVariables.end()) {
+				if (firstVal == FLT_MIN) {
+					firstVal = floatVariables.find(var)->second;
+				}
+				else {
+					secondVal = floatVariables.find(var)->second;
+				}
+			}
+			else if (checkIfNum(var)) {
+				if (firstVal == FLT_MIN) {
+					firstVal = std::stof(var);
+				}
+				else {
+					secondVal = std::stof(var);
+				}
+			}
+			else if (var.length() == 1) {
+				if (var[0] == '=') {
+					operation = '=';
+				}
+				else if (var[0] == '<') {
+					operation = '<';
+				}
+				else if (var[0] == '>') {
+					operation = '>';
+				}
+			}
+			else {
+				throw VirtualMachineException("Expression after IF is not in proper format.");
+			}
+		}
+		if (operation== '=') {
+			if (firstVal == secondVal) {
+				++depth;
+			}
+		}
+		else if (operation == '>')
+		{
+			if (firstVal > secondVal)
+			{
+				++depth;
+			}
+		}
+		else if (operation == '<')
+		{
+			if (firstVal < secondVal)
+			{
+				++depth;
+			}
 		}
 		return 0;
 	}
@@ -543,7 +650,6 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 		returnRows.pop_back();
 		return value;
 	}
-
 	else {
 		throw VirtualMachineException("No such command: " + commandName);
 	}
@@ -634,6 +740,3 @@ size_t VirtualMachine::call(std::string params, size_t row) {
 		throw VirtualMachineException("No such method is defined: " + funcName);
 	}
 }
-
-
-

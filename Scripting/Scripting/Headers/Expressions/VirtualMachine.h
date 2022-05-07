@@ -43,9 +43,6 @@ private:
 	//The call command in a function, so it can be easily accessed.
 	size_t call(std::string params, size_t row);
 
-	
-	
-
 	std::map <std::string, float> floatVariables; //stores the float variables. The name of the variable is the key. Also stores integer values.
 
 	std::map<std::string, std::string> stringVariables; //stores the string variables. The name of the variable is the key.
@@ -66,4 +63,7 @@ private:
 
 	//expression tree
 	Node expressionTree;
+
+	//indicates the depth of the if statement
+	unsigned short depth;
 };
