@@ -8,16 +8,13 @@ print e
 delete e
 
 start
-create a 2
-create b 4
-create c 0
-c = Asd(a,b)
-delete e
-print c
-print "\n"
-Display ("asd")
-print "\n"
-delete a
-delete b
-delete c
+create a 5
+a = a+ 5
+if ( a= 10)
+	a = a - 5
+	if (a = 5)
+		print "asd"
+		print "\n"
+	print "print only that"
+	print "\n"
 end
