@@ -5,7 +5,7 @@ SUBSTRACT *variable* *value*/*variable*- substracts the second value/variable fr
 MULTIPLY *variable* *value*/*variable*- multiplies the second value/variable with the first variable
 DIVIDE *variable* *value*/*variable*- divides first variable with the second value/variable
 PRINT *variable*/"*string*"- writes the value/variable to the console
-IF expression - if the evaluation is true it executes the next row (usually a jump), skips the next row otherwise. Use space after every variable in the expression (TODO).
+IF (expression) - if body should be implemented by starting every row with a '\t'. Multiple if bodies embedded into each other should use multiple '\t'. If you use less '\t', it means you exited the if body.
 JUMP "value"- jumps to the row of the "value" parameter. The first line is identified with '1'
 CREATE *variable name* *value* - Creates a variable with the given name. The value of the variable will be the given number (integer or float) or the string value inside the ' " '. If the value is not a number or between two ", zou will get a nice exception.
 FUNC *function name* - initializes a function indicated by the function name. Function body should follow. It ends with a blank line.
