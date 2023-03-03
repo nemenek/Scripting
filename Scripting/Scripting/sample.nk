@@ -1,20 +1,5 @@
-func Asd (e,g)
-e = e * g
-delete g
-return e
-
-func Display(e)
-print e
-delete e
-
-start
+START
 create a 5
-a = a+ 5
-if ( a= 10)
-	a = a - 5
-	if (a = 5)
-		print "asd"
-		print "\n"
-	print "print only that"
-	print "\n"
-end
+create b 1
+b = call addNums(1, 5)
+END

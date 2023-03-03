@@ -740,3 +740,16 @@ size_t VirtualMachine::call(std::string params, size_t row) {
 		throw VirtualMachineException("No such method is defined: " + funcName);
 	}
 }
+
+void VirtualMachine::initializeStruct(std::string name) {
+	if (this->structs.find(name) == this->structs.end()) {
+		std::map<std::string, float> innerMap;
+		this->structs.insert(std::pair<std::string, std::map<std::string, float>>(name, innerMap));
+	}
+}
+
+void VirtualMachine::addFieldToStruct(std::string structName, std::string fieldName,float value) {
+	if (this->structs.find(structName) != this->structs.end()) {
+		this->structs[structName].insert(std::pair<std::string, float>(fieldName, value));
+	}
+}

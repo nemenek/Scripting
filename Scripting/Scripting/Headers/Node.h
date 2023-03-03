@@ -14,6 +14,7 @@ public:
 	Node* getLeft();
 	Node* getRight();
 
+	//Assist methods
 	static bool isOperation(std::string str);
 	static void addExpression(Node* parent, Node* child);
 	static float evaluateExpression(Node* expressionTree, std::map<std::string, float> floatVars);

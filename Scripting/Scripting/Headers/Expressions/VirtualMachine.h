@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <functional>
+#include <iostream>
 
 class VirtualMachineException {
 public:
@@ -36,6 +37,9 @@ public:
 
 	void addExternalFunction(std::string name, void (*funcPointer)(float, float));
 
+	void initializeStruct(std::string name);
+	void addFieldToStruct(std::string structName, std::string fieldName, float value);
+
 private:
 	size_t execute(std::string commandName, std::string value, int row, bool mainFuncReached);
 
@@ -46,11 +50,14 @@ private:
 	std::map <std::string, float> floatVariables; //stores the float variables. The name of the variable is the key. Also stores integer values.
 
 	std::map<std::string, std::string> stringVariables; //stores the string variables. The name of the variable is the key.
+	
+	std::multimap<std::string, std::pair<std::string, float>> asd;
+	std::map<std::string, std::map<std::string, float>>structs; //stores the names of the structs
 
 	std::map<std::string, int> functions; //stores the name of the function (key), and the line where the function begins. Initialized at FUNC command call
 	std::map<std::string, void (*)()> externalFunctions; //stores external functions with no parameter
 	std::map<std::string, void (*)(std::string)> externalFunctionsString; //stores external functions with string parameter
-	std::map<std::string, void (*)(float, float)> externalFunctionsFloat; //stores external functions with string parameter
+	std::map<std::string, void (*)(float, float)> externalFunctionsFloat; //stores external functions with two float parameters
 
 	std::vector<int> returnRows; //set at call command, stores the line where the program should return after finsihed executing called function
 

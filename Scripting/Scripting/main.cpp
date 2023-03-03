@@ -10,7 +10,6 @@ int main() {
 	vm.addExternalFunction("addNums", addNums);
 	try {
 		vm.executeFromFile("sample.nk");
-		//vm.executeFromScript("START\nCREATE i 5\nprint i\nEND");
 	}
 	catch (VirtualMachineException e) {
 		std::cout << e.what() << std::endl;
