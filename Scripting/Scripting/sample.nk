@@ -1,5 +1,12 @@
 START
 create a 5
-create b 1
-b = call addNums(1, 5)
+print myStruct.field
+print "\n"
+myStruct.field = myStruct.field * a
+print myStruct.field
+print "\n"
+call addNums(a, myStruct.field)
+delete a
+delete myStruct
+print myStruct.field
 END

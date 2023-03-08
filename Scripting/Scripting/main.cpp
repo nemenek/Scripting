@@ -8,6 +8,8 @@ int main() {
 	VirtualMachine vm;
 	vm.addExternalFunction("writeIt", writeIt);
 	vm.addExternalFunction("addNums", addNums);
+	vm.initializeStruct("myStruct");
+	vm.addFieldToStruct("myStruct", "field", 2.0);
 	try {
 		vm.executeFromFile("sample.nk");
 	}
