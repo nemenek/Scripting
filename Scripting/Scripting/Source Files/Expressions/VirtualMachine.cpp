@@ -98,7 +98,7 @@ void VirtualMachine::executeFromFile(std::string path) {
 	size_t pos = 0;
 	std::string commandName;
 	int jumpTo = 0;
-	std::string tempString = "";\
+	std::string tempString = ""; \
 		bool mainFuncReached = false;
 
 	for (size_t i = 0; i < lines.size(); i++) {
@@ -252,6 +252,15 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 					if (floatVariables.find(var) != floatVariables.end()) {
 						Node::addExpression(nextExp, new Node(floatVariables.find(var)->first));
 					}
+					else if (var.find('.') != std::string::npos) {
+						size_t pos = var.find('.');
+						if (this->structs.find(var.substr(0, pos)) != this->structs.end()) {
+							if (this->floatVariables.find(var.substr(pos + 1, var.length())) !=
+								this->floatVariables.end()) {
+								Node::addExpression(nextExp, new Node(floatVariables.find(var)->first));
+							}
+						}
+					}
 					else if (var == "CALL" || var == "call") {
 						Node::addExpression(nextExp, new Node(var));
 						funcParamsHelper = str;
@@ -322,16 +331,20 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 	}
 	/// Case String
 	else if (stringVariables.find(commandName) != stringVariables.end()) {
+		//String = something
 		if (str[0] == '=') {
 			str = str.substr(1, str.length() - 1);
 			str = removeSpacesFromBeginning(str);
+			//Case string = "something"
 			if (str[0] == '"' && str[str.length() - 1] == '"') {
 				str = str.substr(1, str.length() - 2);
 				stringVariables.find(commandName)->second = str;
 			}
+			//Case string = stringVariable
 			else if (stringVariables.find(str) != stringVariables.end()) {
 				stringVariables.find(commandName)->second = stringVariables.find(str)->second;
 			}
+			//Case string = functionWithStringReturn()
 			else if (str.find("call") != std::string::npos || str.find("CALL") != std::string::npos || str.find("Call") != std::string::npos) {
 				if (returnValue.length() == 0) {
 					str = str.substr(4, str.length() - 1);
@@ -435,7 +448,7 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 			throw VirtualMachineException("Invalid if expression format.");
 		}
 		str = str.substr(0, str.length() - 1);
-		
+
 		if (str == "true") {
 			++this->depth;
 			return 0;
@@ -489,13 +502,13 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 				var = str[0];
 				str = str.substr(1, str.length() - 1);
 			}
-			
-			if (floatVariables.find(var) != floatVariables.end()) {
+
+			if (getNextFloatValue(var, this->floatVariables) != FLT_MIN) {
 				if (firstVal == FLT_MIN) {
-					firstVal = floatVariables.find(var)->second;
+					firstVal = getNextFloatValue(var, this->floatVariables);
 				}
 				else {
-					secondVal = floatVariables.find(var)->second;
+					secondVal = getNextFloatValue(var, this->floatVariables);
 				}
 			}
 			else if (checkIfNum(var)) {
@@ -521,7 +534,7 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 				throw VirtualMachineException("Expression after IF is not in proper format.");
 			}
 		}
-		if (operation== '=') {
+		if (operation == '=') {
 			if (firstVal == secondVal) {
 				++depth;
 			}
@@ -573,6 +586,12 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 		}
 	}
 	else if (commandName == "DELETE") {
+		if (this->structs.find(str) != this->structs.end()) {
+			for (std::string val : this->structs.find(str)->second) {
+				floatVariables.erase(this->floatVariables.find(str + "." + val));
+			}
+			this->structs.erase(this->structs.find(str));
+		}
 		std::map<std::string, float>::iterator flIt = floatVariables.find(str);
 		if (flIt != floatVariables.end()) {
 			floatVariables.erase(flIt);
@@ -586,7 +605,6 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 	}
 	else if (commandName == "CALL") {
 		return call(str, row);
-
 	}
 	else if (commandName == "FUNC") {
 		size_t pos;
@@ -632,8 +650,8 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 		else if (checkIfNum(str)) {
 			returnValue = str;
 		}
-		else if (floatVariables.find(str) != floatVariables.end()) {
-			returnValue = std::to_string(floatVariables.find(str)->second);
+		else if (getNextFloatValue(str, this->floatVariables) != FLT_MIN) {
+			returnValue = std::to_string(getNextFloatValue(str, this->floatVariables));
 		}
 		else if (stringVariables.find(str) != stringVariables.end()) {
 			returnValue = stringVariables.find(str)->second;
@@ -684,9 +702,8 @@ size_t VirtualMachine::call(std::string params, size_t row) {
 					if (checkIfNum(parameter)) {
 						floatFuncParams.insert(std::pair<size_t, float>(index, stof(parameter)));
 					}
-					else if (floatVariables.find(parameter) != floatVariables.end()) {
-						std::map<std::string, float>::iterator floatIt = floatVariables.find(parameter);
-						floatFuncParams.insert(std::pair<size_t, float>(index, floatIt->second));
+					else if (getNextFloatValue(parameter, this->floatVariables) != FLT_MIN) {
+						floatFuncParams.insert(std::pair<size_t, float>(index, getNextFloatValue(parameter, this->floatVariables)));
 					}
 					else if (stringVariables.find(parameter) != stringVariables.end()) {
 						std::map<std::string, std::string>::iterator stringIt = stringVariables.find(parameter);
@@ -699,8 +716,6 @@ size_t VirtualMachine::call(std::string params, size_t row) {
 				}
 			}
 			//set return row index value
-
-
 			returnRows.push_back(row + 2);
 			return functions.find(funcName)->second;
 		}
@@ -721,14 +736,14 @@ size_t VirtualMachine::call(std::string params, size_t row) {
 	else if (externalFunctionsFloat.find(funcName) != externalFunctionsFloat.end()) {
 		std::vector<std::string> parameters = readParams(params);
 		float firstVal = 0.0, secondVal = 0.0;
-		if (floatVariables.find(parameters[0]) != floatVariables.end()) {
-			firstVal = floatVariables.find(parameters[0])->second;
+		if (getNextFloatValue(parameters[0], this->floatVariables) != FLT_MIN) {
+			firstVal = getNextFloatValue(parameters[0], this->floatVariables);
 		}
 		else if (checkIfNum(parameters[0])) {
 			firstVal = std::stof(parameters[0]);
 		}
-		if (floatVariables.find(parameters[1]) != floatVariables.end()) {
-			secondVal = floatVariables.find(parameters[1])->second;
+		if (getNextFloatValue(parameters[1], this->floatVariables) != FLT_MIN) {
+			secondVal = getNextFloatValue(parameters[1], this->floatVariables);
 		}
 		else if (checkIfNum(parameters[1])) {
 			secondVal = std::stof(parameters[1]);
@@ -743,13 +758,14 @@ size_t VirtualMachine::call(std::string params, size_t row) {
 
 void VirtualMachine::initializeStruct(std::string name) {
 	if (this->structs.find(name) == this->structs.end()) {
-		std::map<std::string, float> innerMap;
-		this->structs.insert(std::pair<std::string, std::map<std::string, float>>(name, innerMap));
+		std::vector<std::string> innerVector;
+		this->structs.insert(std::pair<std::string, std::vector<std::string>>(name, innerVector));
 	}
 }
 
-void VirtualMachine::addFieldToStruct(std::string structName, std::string fieldName,float value) {
+void VirtualMachine::addFieldToStruct(std::string structName, std::string fieldName, float value) {
 	if (this->structs.find(structName) != this->structs.end()) {
-		this->structs[structName].insert(std::pair<std::string, float>(fieldName, value));
+		this->structs[structName].push_back(fieldName);
+		this->floatVariables.insert(std::pair<std::string, float>(structName + "." + fieldName, value));
 	}
 }

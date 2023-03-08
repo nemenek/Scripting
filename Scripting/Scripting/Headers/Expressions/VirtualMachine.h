@@ -51,8 +51,7 @@ private:
 
 	std::map<std::string, std::string> stringVariables; //stores the string variables. The name of the variable is the key.
 	
-	std::multimap<std::string, std::pair<std::string, float>> asd;
-	std::map<std::string, std::map<std::string, float>>structs; //stores the names of the structs
+	std::map<std::string, std::vector<std::string>>structs; //stores the names of the structs
 
 	std::map<std::string, int> functions; //stores the name of the function (key), and the line where the function begins. Initialized at FUNC command call
 	std::map<std::string, void (*)()> externalFunctions; //stores external functions with no parameter
