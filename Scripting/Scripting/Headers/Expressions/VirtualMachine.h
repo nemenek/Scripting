@@ -39,6 +39,8 @@ public:
 
 	void initializeStruct(std::string name);
 	void addFieldToStruct(std::string structName, std::string fieldName, float value);
+	void addFieldToStruct(std::string structName, std::string fieldName, std::string value);
+	void addStructFieldToStruct(std::string structNameToAddTo, std::string fieldName, std::string structNameToBeAdded);
 
 private:
 	size_t execute(std::string commandName, std::string value, int row, bool mainFuncReached);

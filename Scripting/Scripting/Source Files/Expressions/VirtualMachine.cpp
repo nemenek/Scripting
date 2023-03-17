@@ -252,15 +252,6 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 					if (floatVariables.find(var) != floatVariables.end()) {
 						Node::addExpression(nextExp, new Node(floatVariables.find(var)->first));
 					}
-					else if (var.find('.') != std::string::npos) {
-						size_t pos = var.find('.');
-						if (this->structs.find(var.substr(0, pos)) != this->structs.end()) {
-							if (this->floatVariables.find(var.substr(pos + 1, var.length())) !=
-								this->floatVariables.end()) {
-								Node::addExpression(nextExp, new Node(floatVariables.find(var)->first));
-							}
-						}
-					}
 					else if (var == "CALL" || var == "call") {
 						Node::addExpression(nextExp, new Node(var));
 						funcParamsHelper = str;
@@ -273,6 +264,15 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 					}
 					else if (checkIfNum(var)) {
 						Node::addExpression(nextExp, new Node(var));
+					}
+					else if (var.find('.') != std::string::npos) {
+						size_t pos = var.find('.');
+						if (this->structs.find(var.substr(0, pos)) != this->structs.end()) {
+							if (this->floatVariables.find(var.substr(pos + 1, var.length())) !=
+								this->floatVariables.end()) {
+								Node::addExpression(nextExp, new Node(floatVariables.find(var)->first));
+							}
+						}
 					}
 					else if (var == ")") {
 						/*str = str.substr(1, str.length() - 1);*/
@@ -588,7 +588,12 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 	else if (commandName == "DELETE") {
 		if (this->structs.find(str) != this->structs.end()) {
 			for (std::string val : this->structs.find(str)->second) {
-				floatVariables.erase(this->floatVariables.find(str + "." + val));
+				if (this->floatVariables.find(str + "." + val) != this->floatVariables.end()) {
+					floatVariables.erase(this->floatVariables.find(str + "." + val));
+				}
+				else if (this->stringVariables.find(str + "." + val) != this->stringVariables.end()) {
+					stringVariables.erase(this->stringVariables.find(str + "." + val));
+				}
 			}
 			this->structs.erase(this->structs.find(str));
 		}
@@ -689,6 +694,7 @@ size_t VirtualMachine::call(std::string params, size_t row) {
 		funcName = params.substr(0, pos);
 		params.erase(0, pos);
 	}
+	//Functions implemented in .nk
 	std::map<std::string, int>::iterator it = functions.find(funcName);
 	if (it != functions.end()) {
 		if (params.length() >= 2 && params[0] == '(' && params[params.size() - 1] == ')') {
@@ -723,16 +729,26 @@ size_t VirtualMachine::call(std::string params, size_t row) {
 			throw VirtualMachineException("Function parameters are not in proper format: " + params);
 		}
 	}
-	//Review that
+	//Functions implemented on c++
+	//void params
 	else if (externalFunctions.find(funcName) != externalFunctions.end()) {
 		externalFunctions.find(funcName)->second();
 		return 0;
 	}
+	//string param
 	else if (externalFunctionsString.find(funcName) != externalFunctionsString.end()) {
 		std::vector<std::string> parameters = readParams(params);
-		externalFunctionsString.find(funcName)->second(parameters[0]);
+		std::string paramValue;
+		if (this->stringVariables.find(parameters[0]) != this->stringVariables.end()) {
+			paramValue = this->stringVariables[parameters[0]];
+		}
+		else {
+			paramValue = parameters[0];
+		}
+		externalFunctionsString.find(funcName)->second(paramValue);
 		return 0;
 	}
+	//float param
 	else if (externalFunctionsFloat.find(funcName) != externalFunctionsFloat.end()) {
 		std::vector<std::string> parameters = readParams(params);
 		float firstVal = 0.0, secondVal = 0.0;
@@ -768,4 +784,28 @@ void VirtualMachine::addFieldToStruct(std::string structName, std::string fieldN
 		this->structs[structName].push_back(fieldName);
 		this->floatVariables.insert(std::pair<std::string, float>(structName + "." + fieldName, value));
 	}
+}
+
+void VirtualMachine::addFieldToStruct(std::string structName, std::string fieldName, std::string value) {
+	if (this->structs.find(structName) != this->structs.end()) {
+		this->structs[structName].push_back(fieldName);
+		this->stringVariables.insert(std::pair<std::string, std::string>(structName + "." + fieldName, value));
+	}
+}
+
+void VirtualMachine::addStructFieldToStruct(std::string structName, std::string fieldName, std::string structToBeAdded) {
+	if (this->structs.find(structName) != this->structs.end() && 
+		this->structs.find(structToBeAdded) != this->structs.end()) {
+		for (std::string val : this->structs.find(structToBeAdded)->second) {
+			this->structs[structName].push_back(fieldName);
+			if (this->floatVariables.find(structToBeAdded + "." + val) != this->floatVariables.end()) {
+				this->floatVariables.insert(std::pair<std::string, float>(structName + "." + fieldName + "." + val, this->floatVariables[structToBeAdded + "." + val]));
+			}
+			else if (this->stringVariables.find(structToBeAdded + "." + val) != stringVariables.end()) {
+				this->stringVariables.insert(std::pair<std::string, std::string>(structName + "." + fieldName + "." + val, this->stringVariables[structToBeAdded + "." + val]));
+			}
+			else throw VirtualMachineException("No such struct is initialized: " + fieldName);
+		}
+	}
+	else throw VirtualMachineException("No such struct is initialized: " + fieldName + " or " + structName);
 }
