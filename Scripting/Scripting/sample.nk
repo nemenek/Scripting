@@ -1,12 +1,18 @@
+FUNC myFunction (name, value1, value2)
+print name
+value1 = value1 + value2
+print "\n"
+print value1
+print "\n"
+delete name
+delete value1
+delete value2
+
 START
-create a 5
-print myStruct.field
-print "\n"
-myStruct.field = myStruct.field * a
-print myStruct.field
-print "\n"
-call addNums(a, myStruct.field)
-delete a
+structInStruct.name = "Hello, Mark"
+structInStruct.position.x = structInStruct.position.x + 3.5
+structInStruct.position.y = 5
+CALL myFunction(structInStruct.name, structInStruct.position.x, structInStruct.position.y)
 delete myStruct
-print myStruct.field
+delete structInStruct
 END
