@@ -794,6 +794,7 @@ void VirtualMachine::addFieldToStruct(std::string structName, std::string fieldN
 }
 
 void VirtualMachine::addStructFieldToStruct(std::string structName, std::string fieldName, std::string structToBeAdded) {
+	//This code checks if a struct with 'structName' and 'structToBeAdded' exists, then creates the necessary variables. Hope I don't ever need to debug it.
 	if (this->structs.find(structName) != this->structs.end() && 
 		this->structs.find(structToBeAdded) != this->structs.end()) {
 		for (std::string val : this->structs.find(structToBeAdded)->second) {
