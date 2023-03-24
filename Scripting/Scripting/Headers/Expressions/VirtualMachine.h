@@ -30,19 +30,23 @@ public:
 	/// <param name="path">The path to the file.</param>
 	void executeFromFile(std::string path);
 
-
+	//functions for creating external function
 	void addExternalFunction(std::string name, void (*funcPointer)(void));
-
 	void addExternalFunction(std::string name, void (*funcPointer)(std::string));
-
 	void addExternalFunction(std::string name, void (*funcPointer)(float, float));
 
+	//struct functions
 	void initializeStruct(std::string name);
 	void addFieldToStruct(std::string structName, std::string fieldName, float value);
 	void addFieldToStruct(std::string structName, std::string fieldName, std::string value);
 	void addStructFieldToStruct(std::string structNameToAddTo, std::string fieldName, std::string structNameToBeAdded);
 
+	//enum functions
+	void initializeEnum(std::string name);
+	void addEnumType(std::string enumName, std::string enumType, float value);
+
 private:
+	//main execute function
 	size_t execute(std::string commandName, std::string value, int row, bool mainFuncReached);
 
 	//private functions
@@ -53,6 +57,8 @@ private:
 
 	std::map<std::string, std::string> stringVariables; //stores the string variables. The name of the variable is the key.
 	
+	std::map<std::string, std::vector<std::string>> enums; //stores the enums and the name of its types
+
 	std::map<std::string, std::vector<std::string>>structs; //stores the names of the structs
 
 	std::map<std::string, int> functions; //stores the name of the function (key), and the line where the function begins. Initialized at FUNC command call

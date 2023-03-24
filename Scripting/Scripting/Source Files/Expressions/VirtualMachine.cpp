@@ -810,3 +810,41 @@ void VirtualMachine::addStructFieldToStruct(std::string structName, std::string 
 	}
 	else throw VirtualMachineException("No such struct is initialized: " + fieldName + " or " + structName);
 }
+
+void VirtualMachine::initializeEnum(std::string name) {
+	if (this->enums.find(name) == this->enums.end()) {
+		std::vector<std::string> innerVector;
+		this->enums.insert(std::pair<std::string, std::vector<std::string>>(name, innerVector));
+	}
+}
+
+void VirtualMachine::addEnumType(std::string enumName, std::string enumType, float value = FLT_MIN) {
+	if (this->enums.find(enumName) == this->enums.end()) {
+		return;
+	}
+	std::map<std::string, std::vector<std::string>>::iterator enumIt = this->enums.find(enumName);
+	if (std::find(enumIt->second.begin(), enumIt->second.end(), enumType) != enumIt->second.end()) {
+		return;
+	}
+	std::vector<float> enumValues;
+	this->enums[enumName].push_back(enumType);
+	for (std::string item : this->enums[enumName]) {
+		enumValues.push_back(this->floatVariables[enumName + '.' + item]);
+	}
+
+	const bool explicitValue = (value != FLT_MIN);
+	if (!explicitValue) {
+		value = enumIt->second.size();
+	}
+
+	if (std::find(enumValues.begin(), enumValues.end(), value) != enumValues.end()) {
+		if (explicitValue) {
+			throw VirtualMachineException("Value already present in enum under another type.");
+		}
+		else {
+			value++;
+		}
+	}
+
+	this->floatVariables.insert(std::pair<std::string, float>(enumName + '.' + enumType, value));
+}
