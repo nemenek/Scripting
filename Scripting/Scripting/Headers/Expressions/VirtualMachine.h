@@ -43,7 +43,7 @@ public:
 
 	//enum functions
 	void initializeEnum(std::string name);
-	void addEnumType(std::string enumName, std::string enumType, float value);
+	void addEnumType(std::string enumName, std::string enumType, float value = FLT_MIN);
 
 private:
 	//main execute function

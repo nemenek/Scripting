@@ -180,6 +180,11 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 
 	//Case float:
 	if (floatVariables.find(commandName) != floatVariables.end()) {
+		//It it is an ENUM it cannot be on the beginning of the row so exception thrown. It is constant
+		if (commandName.find('.') != std::string::npos &&
+			this->enums.find(commandName.substr(0, commandName.find('.'))) != this->enums.end()) {
+			throw VirtualMachineException("Enum is constant.");
+		}
 		//If it stays empty, there is no function call, it contains the function name and params otherwise
 		std::string funcParamsHelper = "";
 		//It is evaluateable only if there is '=' at the begining of the expression.
@@ -382,8 +387,6 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 		}
 	}
 
-
-
 	///To all upper case.
 	std::transform(commandName.begin(), commandName.end(), commandName.begin(), ::toupper);
 
@@ -396,7 +399,7 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 		float secondValue = getNextFloatValue(str, this->floatVariables);
 		it->second = it->second + secondValue;
 	}
-	else if (commandName == "SUBSTRACT") {
+	if (commandName == "SUBSTRACT") {
 		size_t pos = str.find(" ");
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
@@ -818,7 +821,7 @@ void VirtualMachine::initializeEnum(std::string name) {
 	}
 }
 
-void VirtualMachine::addEnumType(std::string enumName, std::string enumType, float value = FLT_MIN) {
+void VirtualMachine::addEnumType(std::string enumName, std::string enumType, float value) {
 	if (this->enums.find(enumName) == this->enums.end()) {
 		return;
 	}
@@ -829,7 +832,9 @@ void VirtualMachine::addEnumType(std::string enumName, std::string enumType, flo
 	std::vector<float> enumValues;
 	this->enums[enumName].push_back(enumType);
 	for (std::string item : this->enums[enumName]) {
-		enumValues.push_back(this->floatVariables[enumName + '.' + item]);
+		if (item != enumType) {
+			enumValues.push_back(this->floatVariables[enumName + '.' + item]);
+		}
 	}
 
 	const bool explicitValue = (value != FLT_MIN);
