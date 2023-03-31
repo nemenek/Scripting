@@ -7,18 +7,10 @@ int main() {
 
 	VirtualMachine vm;
 	//external functions
-	vm.addExternalFunction("writeIt", writeIt);
-	vm.addExternalFunction("addNums", addNums);
-
-	//structs
-	vm.initializeStruct("myStruct");
-	vm.addFieldToStruct("myStruct", "x", 0.0);
-	vm.addFieldToStruct("myStruct", "y", 0.0);
-	vm.addFieldToStruct("myStruct", "z", 0.0);
-
-	vm.initializeStruct("structInStruct");
-	vm.addStructFieldToStruct("structInStruct", "position", "myStruct");
-	vm.addFieldToStruct("structInStruct", "name", "none");
+	vm.initializeEnum("Animal");
+	vm.addEnumType("Animal", "Cat");
+	vm.addEnumType("Animal", "Dog");
+	vm.addEnumType("Animal", "Monkey");
 
 	try {
 		vm.executeFromFile("sample.nk");

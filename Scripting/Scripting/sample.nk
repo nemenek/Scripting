@@ -1,18 +1,21 @@
-FUNC myFunction (name, value1, value2)
-print name
-value1 = value1 + value2
-print "\n"
-print value1
-print "\n"
-delete name
-delete value1
-delete value2
+Func printSpecies(animal)
+if (animal = Animal.Cat)
+	print "\n"
+	print "Macsek"
+if (animal = Animal.Dog)
+	print "\n"
+	print "Doggo"
+if (animal = Animal.Monkey)
+	print "\n"
+	print "Makesz"
+delete animal
 
 START
-structInStruct.name = "Hello, Mark"
-structInStruct.position.x = structInStruct.position.x + 3.5
-structInStruct.position.y = 5
-CALL myFunction(structInStruct.name, structInStruct.position.x, structInStruct.position.y)
-delete myStruct
-delete structInStruct
+create Samu Animal.Cat
+create Ropi Animal.Dog
+Call printSpecies(Samu)
+Call printSpecies(Ropi)
+print "\n"
+delete Samu
+delete Ropi
 END
