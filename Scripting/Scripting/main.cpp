@@ -4,9 +4,11 @@
 int main() {
 	void writeIt(std::string param);
 	void addNums(float first, float second);
+	void asd();
 
 	VirtualMachine vm;
 	//external functions
+	vm.addExternalFunction("asd", asd);
 	vm.initializeEnum("Animal");
 	vm.addEnumType("Animal", "Cat");
 	vm.addEnumType("Animal", "Dog");
@@ -27,4 +29,8 @@ void writeIt(std::string param) {
 void addNums(float first, float second) {
 	float result = first + second;
 	std::cout << result << std::endl;
+}
+
+void asd() {
+	std::cout << "asd" << std::endl;
 }
