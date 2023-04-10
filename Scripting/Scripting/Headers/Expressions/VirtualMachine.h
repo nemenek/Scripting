@@ -45,6 +45,8 @@ public:
 	void initializeEnum(std::string name);
 	void addEnumType(std::string enumName, std::string enumType, float value = FLT_MIN);
 
+	//Set the save command's goal directory
+	void setSaveDirectory(std::string directoryName);
 private:
 	//main execute function
 	size_t execute(std::string commandName, std::string value, int row, bool mainFuncReached);
@@ -80,4 +82,7 @@ private:
 
 	//indicates the depth of the if statement
 	unsigned short depth;
+
+	//the goal directory to save the testResult.txt
+	std::string goalDirectory;
 };
