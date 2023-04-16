@@ -1,21 +1,8 @@
-Func printSpecies(animal)
-if (animal = Animal.Cat)
-	print "\n"
-	print "Macsek"
-if (animal = Animal.Dog)
-	print "\n"
-	print "Doggo"
-if (animal = Animal.Monkey)
-	print "\n"
-	print "Makesz"
-delete animal
-
 START
-create Samu Animal.Cat
-create Ropi Animal.Dog
-Call printSpecies(Samu)
-Call printSpecies(Ropi)
+call getTransform("tr")
+print tr.pos.x
 print "\n"
-delete Samu
-delete Ropi
+tr.pos.x = 11.13
+print tr.pos.x
+call writeTransform("tr")
 END
