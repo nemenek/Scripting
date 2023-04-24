@@ -8,13 +8,17 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace ScriptingUnitTest
 {
+	bool called = false;
+
+	void CallableFunction() {
+		called = true;
+	}
+
 	TEST_CLASS(ScriptingUnitTest)
 	{
 	public:
 		VirtualMachine vm;
 		std::string baseScriptDirectory = "E:\\Programozás\\c++\\Scripting\\Scripting\\ScriptingUnitTest\\Test Scripts";
-
-		bool called = false;
 
 		TEST_METHOD(AddTest)
 		{
@@ -62,16 +66,14 @@ namespace ScriptingUnitTest
 			Assert::AreEqual(2.0f, std::stof(GetResultFile()));
 		}
 
-		void CallableFunction() {
-			this->called = true;
-		}
+		
 
 		TEST_METHOD(ExternalFunctionTest) {
-			/*this->called = false;
+			called = false;
 			vm.setSaveDirectory(this->baseScriptDirectory);
 			vm.addExternalFunction("callableFunction", CallableFunction);
 			vm.executeFromFile(this->baseScriptDirectory + "\\ExternalFunctionTest.nk");
-			Assert::IsTrue(this->called);*/
+			Assert::IsTrue(called);
 		}
 
 		TEST_METHOD(StructTest) {
