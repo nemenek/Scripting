@@ -1,12 +1,8 @@
 START
-<<<<<<< HEAD
 call getTransform("tr")
 print tr.pos.x
 print "\n"
 tr.pos.x = 11.13
 print tr.pos.x
 call writeTransform("tr")
-=======
-call asd()
->>>>>>> testing
 END

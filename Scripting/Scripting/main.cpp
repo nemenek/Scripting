@@ -1,7 +1,6 @@
 #include "Headers/Expressions/VirtualMachine.h"
 #include <iostream>
 
-<<<<<<< HEAD
 struct vec3 {
 	float x, y, z;
 };
@@ -20,20 +19,6 @@ void initTransformStruct() {
 	vm.addFieldToStruct("vec3", "y", 0);
 	vm.addFieldToStruct("vec3", "z", 0);
 }
-=======
-int main() {
-	void writeIt(std::string param);
-	void addNums(float first, float second);
-	void asd();
-
-	VirtualMachine vm;
-	//external functions
-	vm.addExternalFunction("asd", asd);
-	vm.initializeEnum("Animal");
-	vm.addEnumType("Animal", "Cat");
-	vm.addEnumType("Animal", "Dog");
-	vm.addEnumType("Animal", "Monkey");
->>>>>>> testing
 
 void getTransform(std::string name) {
 	vm.initializeStruct(name);
@@ -48,12 +33,12 @@ void getTransform(std::string name) {
 }
 
 void writeTransform(std::string name) {
-	 tr.pos.x = *vm.getNumberStructField(name + ".pos.x");
-	 tr.pos.y = *vm.getNumberStructField(name + ".pos.y");
-	 tr.pos.z = *vm.getNumberStructField(name + ".pos.z");
-	 tr.scale.x = *vm.getNumberStructField(name + ".scale.x");
-	 tr.scale.y = *vm.getNumberStructField(name + ".scale.y");
-	 tr.scale.z = *vm.getNumberStructField(name + ".scale.z");
+	 tr.pos.x = *vm.getNumberField(name + ".pos.x");
+	 tr.pos.y = *vm.getNumberField(name + ".pos.y");
+	 tr.pos.z = *vm.getNumberField(name + ".pos.z");
+	 tr.scale.x = *vm.getNumberField(name + ".scale.x");
+	 tr.scale.y = *vm.getNumberField(name + ".scale.y");
+	 tr.scale.z = *vm.getNumberField(name + ".scale.z");
 }
 
 int main() {
@@ -66,8 +51,6 @@ int main() {
 	catch (VirtualMachineException e) {
 		std::cout << e.what() << std::endl;
 	}
-<<<<<<< HEAD
-=======
 }
 
 void writeIt(std::string param) {
@@ -81,5 +64,4 @@ void addNums(float first, float second) {
 
 void asd() {
 	std::cout << "asd" << std::endl;
->>>>>>> testing
 }

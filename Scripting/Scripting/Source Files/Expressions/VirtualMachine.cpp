@@ -873,7 +873,6 @@ void VirtualMachine::addEnumType(std::string enumName, std::string enumType, flo
 	this->floatVariables.insert(std::pair<std::string, float>(enumName + '.' + enumType, value));
 }
 
-<<<<<<< HEAD
 float* VirtualMachine::getNumberField(std::string name) {
 	if (this->floatVariables.find(name) != this->floatVariables.end()) {
 		return &(this->floatVariables.find(name)->second);
@@ -904,8 +903,8 @@ void VirtualMachine::setStructField(std::string name, float value) {
 	else {
 		throw new VirtualMachineException("No such number struct field.");
 	}
-=======
+}
+
 void VirtualMachine::setSaveDirectory(std::string goalDirectory) {
 	this->goalDirectory = goalDirectory;
->>>>>>> testing
 }
