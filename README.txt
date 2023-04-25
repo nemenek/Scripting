@@ -17,3 +17,7 @@ It is now possible to write inline expression such as: a = b*c+2 * (3+3). Note t
 You can call predefined external functions. To register a function use: virualMachine.AddExternalFunction(name, pointer). You can only register either void function with no parameter, one string parameter or two float parameters. These functions should be called the same way as internal functions.
 
 You can create structs from the C++ code: VirtualMachine.initializeStruct(name); VirtualMachine.addFieldToStruct(structName, fieldName, value); VirtualMachine.addStructFieldToStruct(structNameToAddTo, fieldName, structNameToBeAdded);
+
+Get field values with getNumberField(name) and getStringField(name) functions.
+
+Set struct field values with setStructField(name, value) functions
