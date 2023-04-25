@@ -854,14 +854,14 @@ void VirtualMachine::addEnumType(std::string enumName, std::string enumType, flo
 	this->floatVariables.insert(std::pair<std::string, float>(enumName + '.' + enumType, value));
 }
 
-float* VirtualMachine::getNumberStructField(std::string name) {
+float* VirtualMachine::getNumberField(std::string name) {
 	if (this->floatVariables.find(name) != this->floatVariables.end()) {
 		return &(this->floatVariables.find(name)->second);
 	}
 	throw new VirtualMachineException("No such number struct field.");
 }
 
-std::string* VirtualMachine::getStringStructFiled(std::string name) {
+std::string* VirtualMachine::getStringField(std::string name) {
 	if (this->stringVariables.find(name) != this->stringVariables.end()) {
 		return &this->stringVariables.find(name)->second;
 	}

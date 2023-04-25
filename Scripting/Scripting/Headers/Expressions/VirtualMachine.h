@@ -41,8 +41,8 @@ public:
 	void addFieldToStruct(std::string structName, std::string fieldName, std::string value);
 	void addStructFieldToStruct(std::string structNameToAddTo, std::string fieldName, std::string structNameToBeAdded);
 
-	float* getNumberStructField(std::string name);
-	std::string* getStringStructFiled(std::string name);
+	float* getNumberField(std::string name);
+	std::string* getStringField(std::string name);
 	void setStructField(std::string name, std::string value);
 	void setStructField(std::string name, float value);
 
