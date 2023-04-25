@@ -1,0 +1,8 @@
+START
+create a 0
+a = struct.field1 + struct.field2 + struct.structValue.struct2Field
+save a
+delete a
+delete struct
+delete struct2
+END

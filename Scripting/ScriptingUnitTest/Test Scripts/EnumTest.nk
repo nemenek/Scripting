@@ -1,0 +1,8 @@
+START
+create variable Type.enumType2
+if (variable = Type.enumType1)
+	save 0
+if (variable = Type.enumType2)
+	save variable
+delete variable
+END

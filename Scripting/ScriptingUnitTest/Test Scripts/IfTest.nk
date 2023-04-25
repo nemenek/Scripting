@@ -1,0 +1,10 @@
+START
+create a 1
+create b 2
+if (a = b)
+	save a
+if (b = 2)
+	save b
+delete a
+delete b
+END

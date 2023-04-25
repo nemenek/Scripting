@@ -1,0 +1,8 @@
+START
+create a 1.0
+create b 3.4
+a = b - a
+save a
+delete a
+delete b
+END

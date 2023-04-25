@@ -1,0 +1,14 @@
+Func addNums (k, l)
+k = k + l
+delete l
+return k
+
+START
+create a 1.5
+create b 3.4
+a = call addNums(a, b)
+save a
+delete a
+delete b
+delete k
+END

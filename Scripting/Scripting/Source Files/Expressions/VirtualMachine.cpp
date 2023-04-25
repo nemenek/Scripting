@@ -399,7 +399,7 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 		float secondValue = getNextFloatValue(str, this->floatVariables);
 		it->second = it->second + secondValue;
 	}
-	if (commandName == "SUBSTRACT") {
+	else if (commandName == "SUBSTRACT") {
 		size_t pos = str.find(" ");
 		std::string varName = str.substr(0, pos);
 		str.erase(0, pos + 1);
@@ -671,6 +671,25 @@ size_t VirtualMachine::execute(std::string commandName, std::string str, int row
 		returnRows.pop_back();
 		return value;
 	}
+	else if (commandName == "SAVE") {
+		std::ofstream myFile;
+		myFile.open(this->goalDirectory + "\\testResult.txt");
+		std::string value = "";
+		if (checkIfNum(str)) {
+			value = str;
+		}
+		else if (this->floatVariables.find(str) != this->floatVariables.end()) {
+			value = std::to_string(getNextFloatValue(str, this->floatVariables));
+		}
+		else if (this->stringVariables.find(str) != this->stringVariables.end()) {
+			value = this->stringVariables[str];
+		}
+		else {
+			value = str;
+		}
+		myFile << value;
+		myFile.close();
+	}
 	else if (commandName == "") {
 		int value = returnRows[returnRows.size() - 1];
 		returnRows.pop_back();
@@ -798,7 +817,7 @@ void VirtualMachine::addFieldToStruct(std::string structName, std::string fieldN
 
 void VirtualMachine::addStructFieldToStruct(std::string structName, std::string fieldName, std::string structToBeAdded) {
 	//This code checks if a struct with 'structName' and 'structToBeAdded' exists, then creates the necessary variables. Hope I don't ever need to debug it.
-	if (this->structs.find(structName) != this->structs.end() && 
+	if (this->structs.find(structName) != this->structs.end() &&
 		this->structs.find(structToBeAdded) != this->structs.end()) {
 		for (std::string val : this->structs.find(structToBeAdded)->second) {
 			this->structs[structName].push_back(fieldName);
@@ -854,6 +873,7 @@ void VirtualMachine::addEnumType(std::string enumName, std::string enumType, flo
 	this->floatVariables.insert(std::pair<std::string, float>(enumName + '.' + enumType, value));
 }
 
+<<<<<<< HEAD
 float* VirtualMachine::getNumberField(std::string name) {
 	if (this->floatVariables.find(name) != this->floatVariables.end()) {
 		return &(this->floatVariables.find(name)->second);
@@ -884,4 +904,8 @@ void VirtualMachine::setStructField(std::string name, float value) {
 	else {
 		throw new VirtualMachineException("No such number struct field.");
 	}
+=======
+void VirtualMachine::setSaveDirectory(std::string goalDirectory) {
+	this->goalDirectory = goalDirectory;
+>>>>>>> testing
 }

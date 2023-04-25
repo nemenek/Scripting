@@ -1,6 +1,7 @@
 #include "Headers/Expressions/VirtualMachine.h"
 #include <iostream>
 
+<<<<<<< HEAD
 struct vec3 {
 	float x, y, z;
 };
@@ -19,6 +20,20 @@ void initTransformStruct() {
 	vm.addFieldToStruct("vec3", "y", 0);
 	vm.addFieldToStruct("vec3", "z", 0);
 }
+=======
+int main() {
+	void writeIt(std::string param);
+	void addNums(float first, float second);
+	void asd();
+
+	VirtualMachine vm;
+	//external functions
+	vm.addExternalFunction("asd", asd);
+	vm.initializeEnum("Animal");
+	vm.addEnumType("Animal", "Cat");
+	vm.addEnumType("Animal", "Dog");
+	vm.addEnumType("Animal", "Monkey");
+>>>>>>> testing
 
 void getTransform(std::string name) {
 	vm.initializeStruct(name);
@@ -51,4 +66,20 @@ int main() {
 	catch (VirtualMachineException e) {
 		std::cout << e.what() << std::endl;
 	}
+<<<<<<< HEAD
+=======
+}
+
+void writeIt(std::string param) {
+	std::cout <<  param << std::endl;
+}
+
+void addNums(float first, float second) {
+	float result = first + second;
+	std::cout << result << std::endl;
+}
+
+void asd() {
+	std::cout << "asd" << std::endl;
+>>>>>>> testing
 }

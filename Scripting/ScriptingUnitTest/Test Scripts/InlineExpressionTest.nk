@@ -1,0 +1,10 @@
+START
+create a 1.5
+create b 3.4
+create c 2
+a = b * a - (b + c) * 3
+save a
+delete a
+delete b
+delete c
+END

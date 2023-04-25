@@ -11,6 +11,7 @@ CREATE *variable name* *value* - Creates a variable with the given name. The val
 FUNC *function name* - initializes a function indicated by the function name. Function body should follow. It ends with a blank line.
 CALL *function name* - Calls a function identified by the function name. Function should be declared BEFORE the call command. To use return value use the following syntax: a = CALL function(params)
 RETURN value - returns from the function with a value. Cannot be expression (a + b).
+SAVE value - saves the value (can also be variable name) to testResult.txt file.
 
 It is now possible to write inline expression such as: a = b*c+2 * (3+3). Note thet all expression will be executed in the order it is written except if you use '(' and ')'. (meaning 'a + b - a * b' will be interpreted so the '+' will be executed first, except if you write 'a + b - (a*b)')
 
@@ -21,3 +22,5 @@ You can create structs from the C++ code: VirtualMachine.initializeStruct(name);
 Get field values with getNumberField(name) and getStringField(name) functions.
 
 Set struct field values with setStructField(name, value) functions
+
+You can create enums from the C++ code: VirtualMachine.initializeEnum(name); VirtualMachine.addEnumType(enumName, typeName, value)
