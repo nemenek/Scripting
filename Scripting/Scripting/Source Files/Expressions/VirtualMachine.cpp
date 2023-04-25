@@ -853,3 +853,35 @@ void VirtualMachine::addEnumType(std::string enumName, std::string enumType, flo
 
 	this->floatVariables.insert(std::pair<std::string, float>(enumName + '.' + enumType, value));
 }
+
+float* VirtualMachine::getNumberStructField(std::string name) {
+	if (this->floatVariables.find(name) != this->floatVariables.end()) {
+		return &(this->floatVariables.find(name)->second);
+	}
+	throw new VirtualMachineException("No such number struct field.");
+}
+
+std::string* VirtualMachine::getStringStructFiled(std::string name) {
+	if (this->stringVariables.find(name) != this->stringVariables.end()) {
+		return &this->stringVariables.find(name)->second;
+	}
+	throw new VirtualMachineException("No such string struct field.");
+}
+
+void VirtualMachine::setStructField(std::string name, std::string value) {
+	if (this->stringVariables.find(name) != this->stringVariables.end()) {
+		this->stringVariables.find(name)->second = value;
+	}
+	else {
+		throw new VirtualMachineException("No such string struct field.");
+	}
+}
+
+void VirtualMachine::setStructField(std::string name, float value) {
+	if (this->floatVariables.find(name) != this->floatVariables.end()) {
+		this->floatVariables.find(name)->second = value;
+	}
+	else {
+		throw new VirtualMachineException("No such number struct field.");
+	}
+}

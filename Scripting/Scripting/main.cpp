@@ -24,21 +24,21 @@ void getTransform(std::string name) {
 	vm.initializeStruct(name);
 	vm.addStructFieldToStruct(name, "pos", "vec3");
 	vm.addStructFieldToStruct(name, "scale", "vec3");
-	// vm.setField(name + ".pos.x", tr.pos.x);
-	// vm.setField(name + ".pos.y", tr.pos.y);
-	// vm.setField(name + ".pos.z", tr.pos.z);
-	// vm.setField(name + ".scale.x", tr.scale.x);
-	// vm.setField(name + ".scale.y", tr.scale.y);
-	// vm.setField(name + ".scale.z", tr.scale.z);
+	vm.setStructField(name + ".pos.x", tr.pos.x);
+	vm.setStructField(name + ".pos.y", tr.pos.y);
+	vm.setStructField(name + ".pos.z", tr.pos.z);
+	vm.setStructField(name + ".scale.x", tr.scale.x);
+	vm.setStructField(name + ".scale.y", tr.scale.y);
+	vm.setStructField(name + ".scale.z", tr.scale.z);
 }
 
 void writeTransform(std::string name) {
-	// tr.pos.x = vm.getField(name + ".pos.x");
-	// tr.pos.y = vm.getField(name + ".pos.y");
-	// tr.pos.z = vm.getField(name + ".pos.z");
-	// tr.scale.x = vm.getField(name + ".scale.x");
-	// tr.scale.y = vm.getField(name + ".scale.y");
-	// tr.scale.z = vm.getField(name + ".scale.z");
+	 tr.pos.x = *vm.getNumberStructField(name + ".pos.x");
+	 tr.pos.y = *vm.getNumberStructField(name + ".pos.y");
+	 tr.pos.z = *vm.getNumberStructField(name + ".pos.z");
+	 tr.scale.x = *vm.getNumberStructField(name + ".scale.x");
+	 tr.scale.y = *vm.getNumberStructField(name + ".scale.y");
+	 tr.scale.z = *vm.getNumberStructField(name + ".scale.z");
 }
 
 int main() {

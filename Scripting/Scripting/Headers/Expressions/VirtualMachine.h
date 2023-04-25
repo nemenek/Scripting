@@ -41,6 +41,11 @@ public:
 	void addFieldToStruct(std::string structName, std::string fieldName, std::string value);
 	void addStructFieldToStruct(std::string structNameToAddTo, std::string fieldName, std::string structNameToBeAdded);
 
+	float* getNumberStructField(std::string name);
+	std::string* getStringStructFiled(std::string name);
+	void setStructField(std::string name, std::string value);
+	void setStructField(std::string name, float value);
+
 	//enum functions
 	void initializeEnum(std::string name);
 	void addEnumType(std::string enumName, std::string enumType, float value = FLT_MIN);
